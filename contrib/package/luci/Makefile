@@ -718,6 +718,17 @@ define Package/luci-theme-freifunk/install
         $(call Package/luci/install/template,$(1),themes/freifunk)
 endef
 
+define Package/luci-theme-piraten
+  $(call Package/luci/fftemplate)
+  DEPENDS:=+luci-web
+  MAINTAINER:=alx@dd19.de
+  TITLE:=PiratenFreifunk Theme
+endef
+
+define Package/luci-theme-piraten/install
+        $(call Package/luci/install/template,$(1),themes/piraten)
+endef
+
 define Package/luci-theme-freifunk-bno
   $(call Package/luci/fftemplate)
   DEPENDS:=+luci-web
@@ -1033,6 +1044,9 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-theme-freifunk),)
 	PKG_SELECTED_MODULES+=themes/freifunk
 endif
+ifneq ($(CONFIG_PACKAGE_luci-theme-piraten),)
+	PKG_SELECTED_MODULES+=themes/piraten
+endif
 ifneq ($(CONFIG_PACKAGE_luci-theme-openwrt),)
 	PKG_SELECTED_MODULES+=themes/openwrt.org
 endif
@@ -1137,6 +1151,7 @@ $(eval $(call BuildPackage,luci-sgi-cgi))
 $(eval $(call BuildPackage,luci-theme-base))
 $(eval $(call BuildPackage,luci-theme-fledermaus))
 $(eval $(call BuildPackage,luci-theme-freifunk))
+$(eval $(call BuildPackage,luci-theme-piraten))
 $(eval $(call BuildPackage,luci-theme-freifunk-bno))
 $(eval $(call BuildPackage,luci-theme-freifunk-hannover))
 $(eval $(call BuildPackage,luci-theme-openwrt))
