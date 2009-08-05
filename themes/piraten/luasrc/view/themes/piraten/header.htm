@@ -64,24 +64,20 @@ require("luci.http").prepare_content("text/html")
 	<![endif]-->
 </head>
 <body onload="window.setup_hover && setup_hover()">
-<div id="all">
-<center>
 
-<div id="wrapper">
-<div id="main">
+<!-- Begin Main Background_pattern Layer -->
+<div id="main_bg_pattern">
+	<!-- Begin Main Background Layer -->
+	<div id="main_bg">	
 
+	</div>
+	<!-- end Main Background Layer -->
+
+<!-- Begin Header -->
+<div style="position:absolute; top:0px;left:0px; width:100%;overflow:visible">
 
 <div id="header">
-	<div id="headerleft">
-		<div id="headerright">
-			<div id="headerback">
-	<div id="schriftzug"><img src="<%=media%>/images/schriftzug.png" alt="Freifunk  ueberschrift" name="Freifunk_nordost_ueberschrift" border="0"> </div>
-	<div id="logo"><img src="<%=media%>/images/logo.png" alt="Freifunk logo" name="Freifunk_nordost" border="0"></a></div>
-	<div class="clear"></div>
-
-			</div>
-		</div>
-	</div>
+	Piratenfreifunk
 </div>
 
 <div class="pathbar separator black whitetext bold">
@@ -119,6 +115,15 @@ local function submenu(prefix, node)
 	if count > 0 then
 %>
 	<ul>
+		<li class="upper_corners">
+			<table>
+				<tr>
+					<td class="l"></td>
+					<td class="c"></td>
+					<td class="r"></td>
+				</tr>
+			</table>
+		</li>
 	<%- for j, v in pairs(index) do
 		if not v.hidden and #v.name > 0 then
 			local nnode = node.nodes[v.name]
@@ -126,11 +131,22 @@ local function submenu(prefix, node)
 			href = (nnode.query) and href .. luci.http.build_querystring(nnode.query) or href
 		%>
 		<li>
-			<span<% if nnode._menu_selected then %> class="active"<%end%>><a href="<%=luci.util.pcdata(href)%>"><%=nnode.title%></a></span>
+			<a  	class="	<% if nnode._menu_selected then %>active <%end%> 
+				 	<% if nnode.nodes and not nnode.hidden then %>hasSub <%end%> 
+				href="<%=luci.util.pcdata(href)%>"><%=nnode.title%></a>
 			<%- submenu(prefix .. v.name .. "/", nnode) %>
 		</li>
 		<%- end %>
 	<%- end %>
+		<li class="lower_corners">
+			<table>
+				<tr>
+					<td class="l"></td>
+					<td class="c"></td>
+					<td class="r"></td>
+				</tr>
+			</table>
+		</li>
 	</ul>
 <%-
 	end
@@ -192,5 +208,42 @@ end
 	<% end %>
 
 	<br class="clear" />
+	</div>
 </div>
+<!-- END Header -->
+
+<!-- Sidebar -->
+<div id="sidebar_container">
+	<table id="sidebar_content_frame">
+		<tr><td class="ct"></td><td class="rt"></td></tr>
+		<tr>
+			<td class="main">
+				<div id="sidebar">
+					<h2>The Sidebar</h2><br>
+					<ul>
+						<li>Additional Information </li>
+						<li>Maybe some links? </li>
+						<li>Or even Menuitems?</li>
+					</ul>
+				</div>
+			</td>
+			<td class="rc"></td></tr>
+		<tr><td class="cb"></td><td class="rb"></td></tr>
+	</table>
+</div>
+<!-- End Sidebar -->
+<!-- Begin main content-->
+<div id="main_content_container"> 
+<table id="main_content_frame">
+ <tr>
+  <td class="lt">
+  </td>
+  <td class="ct">
+  </td>  
+  <td class="rt">
+ </tr>
+ <tr>
+  <td class="lc">
+  </td>
+  <td class="main">
 <div id="maincontent">
