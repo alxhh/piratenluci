@@ -2,6 +2,7 @@
 *.o
 *.so
 *.swp
+.htm~
 /docs
 dist
 build/po2lmo
