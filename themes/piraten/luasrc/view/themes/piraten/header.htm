@@ -97,10 +97,13 @@ end
 <div class="menubar">
 	<div id="mainmenu" class="mainmenu">
 <%-
+		write(node.title)
+
 local function submenu(prefix, node)
 	if not node.nodes or node.hidden then
 		return false
 	end
+	write( pairs(node.nodes))
 	local index = {}
 	local count = 0
 	for k, n in pairs(node.nodes) do

@@ -97,8 +97,11 @@ end
 <div class="menubar">
 	<div id="mainmenu" class="mainmenu">
 <%-
+
+
 local function submenu(prefix, node)
 	if not node.nodes or node.hidden then
+		write(node.title)
 		return false
 	end
 	local index = {}
