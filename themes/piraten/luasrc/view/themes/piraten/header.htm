@@ -97,12 +97,21 @@ end
 <div class="menubar">
 	<div id="mainmenu" class="mainmenu">
 <%-
+
+local function countsubs(node)
+	local count=0
+	for k, n in pairs(node.nodes) do
+		if n.title and n.target then
+			count = count + 1
+		end
+	end
+	return(count)
+end
 		
 local function submenu(prefix, node)
 	if not node.nodes or node.hidden then
 		return false
 	end
-
 	local index = {}
 	local count = 0
 	for k, n in pairs(node.nodes) do
@@ -116,7 +125,7 @@ local function submenu(prefix, node)
 
 	if count > 0 then
 %>
-	<ul>
+	<ul>	
 		<li class="upper_corners">
 			<table>
 				<tr>
@@ -134,7 +143,7 @@ local function submenu(prefix, node)
 		%>
 		<li>
 			<a  	class="	<% if nnode._menu_selected then %>active <%end%> 
-				 	<% if nnode.nodes and not nnode.hidden then %>hasSub <%end%>
+				 	<% if countsubs(nnode) > 0 then %>hasSub <%end%>
 				"	
 				href="<%=luci.util.pcdata(href)%>"><%=nnode.title%></a>
 			<%- submenu(prefix .. v.name .. "/", nnode) %>
