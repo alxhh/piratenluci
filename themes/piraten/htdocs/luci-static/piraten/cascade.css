@@ -139,12 +139,16 @@ div#maincontent ul {
 			color: #4f9ed3;
 			font-weight:bold;
 			background: transparent url(images/right_black.png) no-repeat 0% 50%;
-		}
+		}		
+		.modemenu .active a:hover {
+			color: #4f9ed3;
+			font-weight:bold;
+			background: transparent url(images/right.png) no-repeat 0% 50%;
+		}		
 		
 		.modemenu li:hover {
 			background: transparent url(images/black_60.png);
-		}		
-
+		}
 		.modemenu a:hover,
 		.modemenu a:focus {
 			color: #ffffff; /*#4f9ed3;*/
@@ -171,7 +175,6 @@ div#maincontent ul {
 			.mainmenu div a {
 				padding:0;
 				padding-left:0.5em;
-				margin-right:0em;
 				color: #ffffff;
 				text-decoration: none;
 				font-weight: bold;
