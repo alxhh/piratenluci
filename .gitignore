@@ -1,6 +1,12 @@
-dist/
 /host
 *.o
 *.so
 *.swp
+.htm~
 /docs
+dist
+build/po2lmo
+libs/lmo/src/lookup
+libs/lmo/src/po2lmo
+piratenfreifunk_vorab
+
