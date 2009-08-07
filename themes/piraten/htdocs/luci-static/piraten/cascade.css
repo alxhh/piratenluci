@@ -84,7 +84,7 @@ div#maincontent ul {
 		font-weight:800;
 		color:#ffffff;
 		padding-top:40px;
-		padding-bottom:25px;
+		padding-bottom:24px;
 		margin-left:300px;/* that is for the heading to be placed at the right spot*/
 		z-index:20;
 	}
@@ -93,6 +93,7 @@ div#maincontent ul {
 		background: transparent;
 		color: #ffffff;
 		margin-left:280px; /* so the menu bar does not overlap the logo */
+		font-size:14px;	/*using px to match the bg-image*/
 	}
 	
 	#sidebar_container{
@@ -101,6 +102,7 @@ div#maincontent ul {
 		width:200px;
 		float:left;
 		z-index:5;
+		font-size:20px;
 	}
 
 	#main_content_container{
@@ -113,30 +115,45 @@ div#maincontent ul {
 /**** begin menu styles ****/
 	/*** begin mode menu styles ***/
 		.modemenu ul {
-			width: auto;
+			width: 100%;
 			list-style-type: none;
 		}
 
 		.modemenu li {
-			float: right;
+			display:block;
 		}
 
-		.modemenu a{ /*should be matched with .mainmenu a*/
-			display: block;
+		.modemenu a{
+			display:block;
+			text-align:right;
 			padding:0;
-			color: #ffffff;
+			color: #000000;
 			text-decoration: none;
 			font-weight: bold;
 			margin-left:0.5em;
-			font-size:0.9em;
+			font-size:14px;	
 		}
 
 
-		.modemenu .active a,
-		.modemenu a:hover,
-		.modemenu a:focus { /*link styles in mode menu, first level, active*/
+		.modemenu .active a {
 			color: #4f9ed3;
 			font-weight:bold;
+			background: transparent url(images/right_black.png) no-repeat 0% 50%;
+		}		
+		.modemenu .active a:hover {
+			color: #4f9ed3;
+			font-weight:bold;
+			background: transparent url(images/right.png) no-repeat 0% 50%;
+		}		
+		
+		.modemenu li:hover {
+			background: transparent url(images/black_60.png);
+		}
+		.modemenu a:hover,
+		.modemenu a:focus {
+			color: #ffffff; /*#4f9ed3;*/
+			font-weight:bold;
+			background: transparent url(images/right.png) no-repeat 0% 50%;
 		}
 	/*** end mode menu styles ***/
 	
@@ -155,14 +172,12 @@ div#maincontent ul {
 			white-space: nowrap;
 		}
 		/** first level styles **/		
-			.mainmenu div a {/*should be matched with .modemanu a*/
+			.mainmenu div a {
 				padding:0;
 				padding-left:0.5em;
-				margin-right:1em;
 				color: #ffffff;
 				text-decoration: none;
 				font-weight: bold;
-				font-size:0.9em;
 			}
 			.mainmenu div:hover > ul { /*show dropdown menus on hover*/
 					display: block;
@@ -186,7 +201,7 @@ div#maincontent ul {
 					font-size:0.8em;
 					line-height:1.5;
 					font-weight:bold;
-		        		margin-right:0px;
+		        		margin-left:0em;
 					padding-right:25px;	/*space for the submenu marker*/
 		        		display:block;
 				}
@@ -207,7 +222,7 @@ div#maincontent ul {
 				.mainmenu ul li > ul { /*submenus appear to the right*/
 					left: 100%;
 					margin-top:-1.2em; /* line-height times font-size*/
-					margin-left:-7px; /* should not overlap the submenu marker*/
+					margin-left:-7px;  /*should not overlap the submenu marker*/
 				}
 		
 			/** submenu frame **/
@@ -216,51 +231,51 @@ div#maincontent ul {
 				   corners on the top and on the bottom of each submenu. The first 
 				   level dropdown menus get those only at the bottom. 
 				*/ 
-				.mainmenu .upper_corners {
+				.upper_corners {
 					margin-top:-5px;
 					height:5px;
 					width:100%;
 					background:transparent none;
 					float:none;
 				}		
-				.mainmenu .lower_corners {
+				.lower_corners {
 					margin-bottom:-5px;
 					height:5px;
 					width:100%;
 					background:transparent none;
 					float:none;
 				}		
-				.mainmenu .upper_corners:hover,
-				.mainmenu .lower_corners:hover { /*the corners are not supposed to interact with the cursor */
-					background:transparent none;
+				.upper_corners:hover,
+				.lower_corners:hover { /*the corners are not supposed to interact with the cursor */
+					background:transparent none !important; 
 				}		
-				.mainmenu .upper_corners table,
-				.mainmenu .lower_corners table {
+				.upper_corners table,
+				.lower_corners table {
 					width:100%;
 					border-collapse:collapse;
 					border-spacing:0px;
 				}		
-				.mainmenu .upper_corners .c,
-				.mainmenu .lower_corners .c {
+				.upper_corners .c,
+				.lower_corners .c {
 					height:5px;
 					background:transparent url(images/black_60.png);
 				}		
-				.mainmenu .upper_corners .l {
+				.upper_corners .l {
 					height:5px;
 					width:5px;
 					background:transparent url(images/black_ul.png);
 				}		
-				.mainmenu .upper_corners .r {
+				.upper_corners .r {
 					height:5px;
 					width:5px;
 					background:transparent url(images/black_ur.png);
 				}		
-				.mainmenu .lower_corners .l {
+				.lower_corners .l {
 					height:5px;
 					width:5px;
 					background:transparent url(images/black_ll.png);
 				}		
-				.mainmenu .lower_corners .r {
+				.lower_corners .r {
 					height:5px;
 					width:5px;
 					background:transparent url(images/black_lr.png);
@@ -388,7 +403,7 @@ td.rb{
 	margin-right:-22px;
 /* the content frame actually is too wide,
 that is why the sidebar space needs to be enlarged*/
-	padding-left:2em;
+	padding-left:1em;
 	font-size:12px;
 	font-weight:normal;	
 }
