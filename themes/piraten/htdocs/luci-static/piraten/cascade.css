@@ -30,12 +30,11 @@
 	}
 
 	#main_bg {
-		position:absolute;
 		background: url(images/PF_background.png) no-repeat;
 		top:0px;
 		left:0px;
 		width:100%;
-		height:500px;
+		min-height:500px;
 		z-index:0;
 	}
 /**** end basic background layout setting ****/
@@ -101,7 +100,7 @@ div#maincontent ul {
 		padding-top:36px;
 	}
 
-	.menubar {  /*make that an id?*/
+	#menubar {  /*make that an id?*/
 		background: transparent;
 		color: #ffffff;
 		margin-left:284px; /* so that the menu bar does not overlap the logo */		
@@ -129,21 +128,21 @@ div#maincontent ul {
 
 /**** begin menu styles ****/	
 	/*** begin main menu styles ***/
-		.mainmenu {	
+		#mainmenu {	
 			float: left;
 			width: auto;
 			background: transparent;
 			color: #ffffff;
 		}
 
-		.mainmenu div {
+		#mainmenu div {
 			float: left;							
 		}
-		.mainmenu li {
+		#mainmenu li {
 			white-space: nowrap;
 		}		
 		/** first level styles **/		
-			.mainmenu div a {
+			#mainmenu div a {
 				padding:0;
 				padding-left:0.5em;
 				color: #ffffff;
@@ -151,65 +150,65 @@ div#maincontent ul {
 				font-weight: bold;
 				margin-right:0.5em;
 			}
-			.mainmenu div.tiny a{
+			#mainmenu div.tiny a{
 				font-weight:normal;
 				font-size:0.8em;
 				margin-right:0px;
 			}
-			.mainmenu div:hover > ul { /*show dropdown menus on hover*/
+			#mainmenu div:hover > ul { /*show dropdown menus on hover*/
 				display:block;
 			}
-			.mainmenu div:hover > a{
+			#mainmenu div:hover > a{
 				color: #4f9ed3;
 			}
-			.mainmenu div.preactive > a {
+			#mainmenu div.preactive > a {
 				color: #4f9ed3;
 			}
 			/** dropdown level styles **/					
-				.mainmenu div ul { 
+				#mainmenu div ul { 
 					display: none;
 					position: absolute;
 					background: transparent url(images/black_60.png);
 					list-style-type: none;
 					z-index:20;
 				}
-				.mainmenu li a{ 
+				#mainmenu li a{ 
 					font-size:0.8em;
 					line-height:1.5;
 		        		margin-left:0em;
 					padding-right:25px;	/*space for the submenu marker*/
 		        		display:block;
 				}
-				.mainmenu ul li.show_left>a{ /* for submenus showing on the left*/
+				#mainmenu ul li.show_left>a{ /* for submenus showing on the left*/
 					font-size:0.8em;
 					line-height:1.5;
 		        		margin-left:0em;
 					padding-left:25px;	/*space for the submenu marker*/
 		        		display:block;
 				}
-				.mainmenu ul li:hover,
-				.mainmenu ul li:focus{ /*menu item background, dropdown panels, active*/
+				#mainmenu ul li:hover,
+				#mainmenu ul li:focus{ /*menu item background, dropdown panels, active*/
 					background:transparent url(images/black_60.png);
 				}
-				.mainmenu ul li:hover > ul{ /*show submenus on hover*/
+				#mainmenu ul li:hover > ul{ /*show submenus on hover*/
 					display: block;
 				}
 		
-				.mainmenu ul li:hover > a{
+				#mainmenu ul li:hover > a{
 					color: #4f9ed3;
 				}	
-				.mainmenu li a.hasSub{ /* show submenu marker */
+				#mainmenu li a.hasSub{ /* show submenu marker */
 					background:transparent url(images/right.png) 100% 50% no-repeat;
 				}	
-				.mainmenu ul li.show_left > a.hasSub{ /* show submenu marker */
+				#mainmenu ul li.show_left > a.hasSub{ /* show submenu marker */
 					background:transparent url(images/left.png) 0% 50% no-repeat;
 				}			
-				.mainmenu ul li > ul { /*submenus appear to the right*/
+				#mainmenu ul li > ul { /*submenus appear to the right*/
 					left: 100%;
 					margin-top:-1.2em; /* line-height times font-size*/
 					margin-left:-7px;  /*should not overlap the submenu marker*/
 				}
-				.mainmenu ul li > ul.show_left { /*show submenu on the left*/
+				#mainmenu ul li > ul.show_left { /*show submenu on the left*/
 					left:auto;
 					right:100%;
 					margin-right:-7px;					
@@ -318,7 +317,7 @@ div#maincontent ul {
 		}
 	/*** end mode menu styles ***/
 	/*** begin changes styles ***/
-		/*styles matched with .mainmenu */
+		/*styles matched with #mainmenu */
 		.changes {
 			text-align:right;
 			padding-right:2em;
@@ -368,8 +367,8 @@ div#maincontent ul {
 
 
 
-.mainmenu li:hover > span > a,
-.mainmenu div:hover > a {
+#mainmenu li:hover > span > a,
+#mainmenu div:hover > a {
 	background: transparent url(images/black_60.png);
 }
 
@@ -911,7 +910,7 @@ ul.cbi-apply {
 	margin-left: -100% !important;
 }
 
-* html div.menubar {
+* html div#mainbar {
 	margin-left: -100% !important;
 	width: 200% !important;
 }
@@ -921,32 +920,32 @@ ul.cbi-apply {
 	width: 160% !important;
 }
 
-* html div.mainmenu div.hover ul,
-* html div.mainmenu div li.hover ul,
-* html div.mainmenu div li li.hover ul,
-* html div.mainmenu div li li li.hover ul,
-* html div.mainmenu div li li li li.hover ul {
+* html div#mainmenu div.hover ul,
+* html div#mainmenu div li.hover ul,
+* html div#mainmenu div li li.hover ul,
+* html div#mainmenu div li li li.hover ul,
+* html div#mainmenu div li li li li.hover ul {
 	display: block !important;
 	margin-left: 3em;
 }
 
-* html div.mainmenu div.hover ul {
+* html div#mainmenu div.hover ul {
 	margin-left: 0;
 }
 
-* html div.mainmenu .hover ul ul,
-* html div.mainmenu .hover ul ul ul,
-* html div.mainmenu .hover ul ul ul ul,
-* html div.mainmenu .hover ul ul ul ul ul {
+* html div#mainmenu .hover ul ul,
+* html div#mainmenu .hover ul ul ul,
+* html div#mainmenu .hover ul ul ul ul,
+* html div#mainmenu .hover ul ul ul ul ul {
 	display: none !important;
 }
 
-* html div.mainmenu li {
+* html div#mainmenu li {
 	height: 1em !important;
 	width: 10em !important;
 }
 
-* html .mainmenu {
+* html #mainmenu {
 	height: 1.8em;
 }
 
