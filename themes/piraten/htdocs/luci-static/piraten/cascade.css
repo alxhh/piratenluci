@@ -25,6 +25,8 @@
 		left:0px;
 		width:100%;
 	        min-height:100%;
+		min-width:950px;
+		z-index:0;		
 	}
 
 	#main_bg {
@@ -34,12 +36,20 @@
 		left:0px;
 		width:100%;
 		height:500px;
+		z-index:0;
 	}
 /**** end basic background layout setting ****/
 
 
 /**** begin general content settings ****/
 	/*should be merged with stuff that comes later*/
+
+.hsep {
+	background-color:#000000; 
+	height:1px;
+	margin:1em 1em;
+}
+
 code {
 	font-family: monospace;
 	white-space: pre;
@@ -77,28 +87,33 @@ div#maincontent ul {
 		* and the container for the main content div(right).
 	   padding and margin are matched with the background images.		
 	*/
-	#header {
+
+
+	#header {		
 		background: transparent url(images/city.png) no-repeat 100% 100%;
 		border:none;
 		font-size:60px;
 		font-weight:800;
 		color:#ffffff;
-		padding-top:40px;
-		padding-bottom:24px;
-		margin-left:300px;/* that is for the heading to be placed at the right spot*/
-		z-index:20;
+		vertical-align:middle;
+		margin-left:300px;
+		height:100px;
+		padding-top:36px;
 	}
 
 	.menubar {  /*make that an id?*/
 		background: transparent;
 		color: #ffffff;
-		margin-left:280px; /* so the menu bar does not overlap the logo */
-		font-size:14px;	/*using px to match the bg-image*/
+		margin-left:284px; /* so that the menu bar does not overlap the logo */		
+		vertical-align:middle;
+		height:25px;
+		font-size:16px;	
 	}
 	
 	#sidebar_container{
-		margin-left:0px; 
-		margin-top:280px; 
+		position:absolute;
+		left:0px; 
+		top:280px; 
 		width:200px;
 		float:left;
 		z-index:5;
@@ -107,56 +122,12 @@ div#maincontent ul {
 
 	#main_content_container{
 		margin-left:211px;
-		margin-top:175px;
+		margin-top:14px;
 		z-index:5;
 	}
 /**** end basic content layout ****/
 
-/**** begin menu styles ****/
-	/*** begin mode menu styles ***/
-		.modemenu ul {
-			width: 100%;
-			list-style-type: none;
-		}
-
-		.modemenu li {
-			display:block;
-		}
-
-		.modemenu a{
-			display:block;
-			text-align:right;
-			padding:0;
-			color: #000000;
-			text-decoration: none;
-			font-weight: bold;
-			margin-left:0.5em;
-			font-size:14px;	
-		}
-
-
-		.modemenu .active a {
-			color: #4f9ed3;
-			font-weight:bold;
-			background: transparent url(images/right_black.png) no-repeat 0% 50%;
-		}		
-		.modemenu .active a:hover {
-			color: #4f9ed3;
-			font-weight:bold;
-			background: transparent url(images/right.png) no-repeat 0% 50%;
-		}		
-		
-		.modemenu li:hover {
-			background: transparent url(images/black_60.png);
-		}
-		.modemenu a:hover,
-		.modemenu a:focus {
-			color: #ffffff; /*#4f9ed3;*/
-			font-weight:bold;
-			background: transparent url(images/right.png) no-repeat 0% 50%;
-		}
-	/*** end mode menu styles ***/
-	
+/**** begin menu styles ****/	
 	/*** begin main menu styles ***/
 		.mainmenu {	
 			float: left;
@@ -166,11 +137,11 @@ div#maincontent ul {
 		}
 
 		.mainmenu div {
-			float: left;					
+			float: left;							
 		}
 		.mainmenu li {
 			white-space: nowrap;
-		}
+		}		
 		/** first level styles **/		
 			.mainmenu div a {
 				padding:0;
@@ -178,16 +149,21 @@ div#maincontent ul {
 				color: #ffffff;
 				text-decoration: none;
 				font-weight: bold;
+				margin-right:0.5em;
+			}
+			.mainmenu div.tiny a{
+				font-weight:normal;
+				font-size:0.8em;
+				margin-right:0px;
 			}
 			.mainmenu div:hover > ul { /*show dropdown menus on hover*/
-					display: block;
+				display:block;
 			}
 			.mainmenu div:hover > a{
-					color: #4f9ed3;
+				color: #4f9ed3;
 			}
 			.mainmenu div.preactive > a {
 				color: #4f9ed3;
-				font-weight: bold;
 			}
 			/** dropdown level styles **/					
 				.mainmenu div ul { 
@@ -200,9 +176,15 @@ div#maincontent ul {
 				.mainmenu li a{ 
 					font-size:0.8em;
 					line-height:1.5;
-					font-weight:bold;
 		        		margin-left:0em;
 					padding-right:25px;	/*space for the submenu marker*/
+		        		display:block;
+				}
+				.mainmenu ul li.show_left>a{ /* for submenus showing on the left*/
+					font-size:0.8em;
+					line-height:1.5;
+		        		margin-left:0em;
+					padding-left:25px;	/*space for the submenu marker*/
 		        		display:block;
 				}
 				.mainmenu ul li:hover,
@@ -218,11 +200,19 @@ div#maincontent ul {
 				}	
 				.mainmenu li a.hasSub{ /* show submenu marker */
 					background:transparent url(images/right.png) 100% 50% no-repeat;
-				}				
+				}	
+				.mainmenu ul li.show_left > a.hasSub{ /* show submenu marker */
+					background:transparent url(images/left.png) 0% 50% no-repeat;
+				}			
 				.mainmenu ul li > ul { /*submenus appear to the right*/
 					left: 100%;
 					margin-top:-1.2em; /* line-height times font-size*/
 					margin-left:-7px;  /*should not overlap the submenu marker*/
+				}
+				.mainmenu ul li > ul.show_left { /*show submenu on the left*/
+					left:auto;
+					right:100%;
+					margin-right:-7px;					
 				}
 		
 			/** submenu frame **/
@@ -280,7 +270,91 @@ div#maincontent ul {
 					width:5px;
 					background:transparent url(images/black_lr.png);
 				}				
-	/*** end main menu styles ***/						
+	/*** end main menu styles ***/
+	/*** begin mode menu styles ***/
+		.modemenu ul {
+			width: 100%;
+			list-style-type: none;
+		}
+
+		.modemenu li {
+			display:block;	
+		}
+
+		.modemenu a{
+			display:block;
+			text-align:right;
+			padding:0;
+			padding-right:1em;
+			margin-left:1em;
+			margin-right:0em;
+			color: #000000;
+			text-decoration: none;
+			font-weight: bold;
+			font-size:14px;
+		}
+
+		.modemenu .active a {
+			color: #ff8800;
+			font-weight:bold;
+			background: transparent url(images/right_black.png) no-repeat 0% 50%;
+		}
+		.modemenu .active a:focus,		
+		.modemenu .active a:hover {
+			color: #ffffff;
+			font-weight:bold;
+			background: transparent url(images/right.png) no-repeat 0% 50%;
+		}		
+		
+		.modemenu li:focus,
+		.modemenu li:hover {
+			background: #ff8800;
+		}
+		.modemenu a:hover,
+		.modemenu a:focus {
+			color: #ffffff;
+			font-weight:bold;
+			background: transparent url(images/right.png) no-repeat 0% 50%;
+		}
+	/*** end mode menu styles ***/
+	/*** begin changes styles ***/
+		/*styles matched with .mainmenu */
+		.changes {
+			text-align:right;
+			padding-right:2em;
+			background: transparent url(images/right_black.png) 100% 50% no-repeat;			
+		}
+		.changes ul{
+			margin-left:-20px;		
+			position:absolute;
+			left:100%;
+			margin-top:-1.5em;
+			background: transparent url(images/black_60.png);
+			display:none;
+			list-style:none;
+			color:#ffffff;	
+			white-space:nowrap;		
+		}
+		.changes:hover > ul {
+			display:block;
+		}
+
+		.changes ul li:hover,
+		.changes ul li:focus{ /*menu item background, dropdown panels, active*/
+			background:transparent url(images/black_60.png);
+		}
+		.changes li a { 
+			color:#ffffff;
+			font-size:1em;
+			line-height:1.5;
+			font-weight:bold;
+        		padding: 0px 0.5em;
+        		display:block;
+			text-decoration:none;
+		}
+		
+
+						
 /**** end menu styles****/
 
 
@@ -400,12 +474,26 @@ td.rb{
 #sidebar{
 	margin-top:-22px;
 	margin-bottom:-22px;
-	margin-right:-22px;
+	margin-right:-43px;
 /* the content frame actually is too wide,
 that is why the sidebar space needs to be enlarged*/
-	padding-left:1em;
 	font-size:12px;
-	font-weight:normal;	
+	font-weight:normal;
+	text-align:right;	
+}
+
+#sidebar  h1 {
+	font-size:100%;
+	border-bottom-width:1px;
+	border-bottom-style:solid;
+	border-bottom-color:#000000;
+	margin:1em;
+	display:block;
+	text-align:left;
+}
+
+#sidebar p {
+	padding:0em 0.5em;
 }
 /**** End Sidebar ****/
 
