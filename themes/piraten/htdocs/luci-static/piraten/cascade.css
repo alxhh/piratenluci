@@ -294,7 +294,7 @@ div#maincontent ul {
 		}
 
 		.modemenu .active a {
-			color: #ff8800;
+			color: #4F9ED3;
 			font-weight:bold;
 			background: transparent url(images/right_black.png) no-repeat 0% 50%;
 		}
@@ -307,7 +307,7 @@ div#maincontent ul {
 		
 		.modemenu li:focus,
 		.modemenu li:hover {
-			background: #ff8800;
+			background: #4F9ED3;
 		}
 		.modemenu a:hover,
 		.modemenu a:focus {
