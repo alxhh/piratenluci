@@ -49,7 +49,7 @@ require("luci.http").prepare_content("text/html")
 <head>
 	<link rel="stylesheet" type="text/css" href="<%=media%>/cascade.css" />
 	<% if node and node.css then %><link rel="stylesheet" type="text/css" href="<%=resource%>/<%=node.css%>" /><% end %>
-	<link rel="shortcut icon" href="<%=media%>/images/favicon.ico" />
+	<link rel="shortcut icon" href="<%=media%>/images/logo32x32.png" />
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
 	<meta http-equiv="content-script-type" content="text/javascript" />
 	<title><%=striptags( hostname .. ( (node and node.title) and ' - ' .. node.title or '')) %> - LuCI</title>
@@ -238,16 +238,18 @@ if tree.nodes[category] and tree.nodes[category].ucidata then
 			end
 		end
 	end
-	if ucic > 0 then 
 %>
-					
-						<div class="changes">							
+						<div class="changes">				
+<%
+	if ucic > 0 then 
+%>					
+			
 							<a class="warning" href="<%=controller%>/<%=category%>/uci/changes"><%:unsavedchanges%>: <%=ucic%></a>							
 <%- 
 		submenu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], 1)
 	else 
 %>
-							<li><a href="#"><%:changes%>: 0</a></li>
+							<a class="no_changes" href="#"><%:changes%>: 0</a>
 <%- 
 	end 
 %>
@@ -282,6 +284,7 @@ end
 							src="<%=media%>/images/piratenpartei_logo.png" alt="Piratenpartei"
 							style="margin-right:auto; margin-top:3em";
 						/>
+						
 					</div>
 				</td>
 				<td class="rc"></td>
