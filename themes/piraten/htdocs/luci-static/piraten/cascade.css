@@ -7,9 +7,9 @@
 	/* there are three background layers:
 		* the body using pirate_blue.png as background image.
 		* above that the background pattern (id="main_bg_pattern") 
-		  for an orange top, black separator bar and below that 
+		  for an orange top, black separator bar and below that
 		  pirate_grey blendinng into pirate_blue.
-		* above that the top background image including the logo.
+		* above that the top background image followed by the logo.
 	   I use PNGs instead of colors to make sure that colors that are 
 	   meant to look identical actually do so.
 	*/
@@ -36,6 +36,13 @@
 		width:100%;
 		min-height:500px;
 		z-index:0;
+	}
+
+	#logo {
+		position:absolute;
+		left:32px;
+		top:59px;
+		background: transparent;
 	}
 /**** end basic background layout setting ****/
 
@@ -80,13 +87,13 @@ div#maincontent ul {
 
 /**** begin basic content layout ****/
 	/* the screen is devided into four content areas:
+		*
 		* the header is used for the heading and the skyline background.
 		* below that lies the menubar providing space for main menu and mode menu.
 		* below the menubar lie the container for the sidebar(left) 
 		* and the container for the main content div(right).
 	   padding and margin are matched with the background images.		
 	*/
-
 
 	#header {		
 		background: transparent url(images/city.png) no-repeat 100% 100%;
