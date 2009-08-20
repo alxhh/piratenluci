@@ -102,9 +102,11 @@ div#maincontent ul {
 		font-weight:800;
 		color:#ffffff;
 		vertical-align:middle;
-		margin-left:300px;
-		height:100px;
-		padding-top:36px;
+		padding-left:300px;	/* with this padding the heading won't be placed over the logo*/
+		padding-right:300px;	/* the heading will still be centered as best as possible*/
+		height:110px;
+		padding-top:26px;
+		text-align:center;
 	}
 
 	#menubar {  /*make that an id?*/
@@ -132,6 +134,7 @@ div#maincontent ul {
 		z-index:5;
 	}
 /**** end basic content layout ****/
+
 
 /**** begin menu styles ****/	
 	/*** begin main menu styles ***/
@@ -379,24 +382,6 @@ div#maincontent ul {
 .pathbar {
 	display: none;
 }
-
-
-/* alte Menu-styles, werden komplett neu gemacht!
-
-
-
-#mainmenu li:hover > span > a,
-#mainmenu div:hover > a {
-	background: transparent url(images/black_60.png);
-}
-
-
-
-
-
-
-
- bis hier die alten Menu styles*/
 
 
 #content {
