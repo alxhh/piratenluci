@@ -96,7 +96,7 @@ div#maincontent ul {
 	*/
 
 	#header {		
-		background: transparent url(images/city.png) no-repeat 100% 100%;
+		background: none;/*transparent url(images/city.png) no-repeat 100% 100%;*/
 		border:none;
 		font-size:60px;
 		font-weight:800;
