@@ -7,9 +7,9 @@
 	/* there are three background layers:
 		* the body using pirate_blue.png as background image.
 		* above that the background pattern (id="main_bg_pattern") 
-		  for an orange top, black separator bar and below that 
+		  for an orange top, black separator bar and below that
 		  pirate_grey blendinng into pirate_blue.
-		* above that the top background image including the logo.
+		* above that the top background image followed by the logo.
 	   I use PNGs instead of colors to make sure that colors that are 
 	   meant to look identical actually do so.
 	*/
@@ -25,21 +25,37 @@
 		left:0px;
 		width:100%;
 	        min-height:100%;
+		min-width:950px;
+		z-index:0;		
 	}
 
 	#main_bg {
-		position:absolute;
 		background: url(images/PF_background.png) no-repeat;
 		top:0px;
 		left:0px;
 		width:100%;
-		height:500px;
+		min-height:500px;
+		z-index:0;
+	}
+
+	#logo {
+		position:absolute;
+		left:32px;
+		top:59px;
+		background: transparent;
 	}
 /**** end basic background layout setting ****/
 
 
 /**** begin general content settings ****/
 	/*should be merged with stuff that comes later*/
+
+.hsep {
+	background-color:#000000; 
+	height:1px;
+	margin:1em 1em;
+}
+
 code {
 	font-family: monospace;
 	white-space: pre;
@@ -71,34 +87,41 @@ div#maincontent ul {
 
 /**** begin basic content layout ****/
 	/* the screen is devided into four content areas:
+		*
 		* the header is used for the heading and the skyline background.
 		* below that lies the menubar providing space for main menu and mode menu.
 		* below the menubar lie the container for the sidebar(left) 
 		* and the container for the main content div(right).
 	   padding and margin are matched with the background images.		
 	*/
-	#header {
-		background: transparent url(images/city.png) no-repeat 100% 100%;
+
+	#header {		
+		background: none;/*transparent url(images/city.png) no-repeat 100% 100%;*/
 		border:none;
 		font-size:60px;
 		font-weight:800;
 		color:#ffffff;
-		padding-top:40px;
-		padding-bottom:24px;
-		margin-left:300px;/* that is for the heading to be placed at the right spot*/
-		z-index:20;
+		vertical-align:middle;
+		padding-left:300px;	/* with this padding the heading won't be placed over the logo*/
+		padding-right:300px;	/* the heading will still be centered as best as possible*/
+		height:110px;
+		padding-top:26px;
+		text-align:center;
 	}
 
-	.menubar {  /*make that an id?*/
+	#menubar {  /*make that an id?*/
 		background: transparent;
 		color: #ffffff;
-		margin-left:280px; /* so the menu bar does not overlap the logo */
-		font-size:14px;	/*using px to match the bg-image*/
+		margin-left:284px; /* so that the menu bar does not overlap the logo */		
+		vertical-align:middle;
+		height:25px;
+		font-size:16px;	
 	}
 	
 	#sidebar_container{
-		margin-left:0px; 
-		margin-top:280px; 
+		position:absolute;
+		left:0px; 
+		top:280px; 
 		width:200px;
 		float:left;
 		z-index:5;
@@ -107,122 +130,98 @@ div#maincontent ul {
 
 	#main_content_container{
 		margin-left:211px;
-		margin-top:175px;
+		margin-top:14px;
 		z-index:5;
 	}
 /**** end basic content layout ****/
 
-/**** begin menu styles ****/
-	/*** begin mode menu styles ***/
-		.modemenu ul {
-			width: 100%;
-			list-style-type: none;
-		}
 
-		.modemenu li {
-			display:block;
-		}
-
-		.modemenu a{
-			display:block;
-			text-align:right;
-			padding:0;
-			color: #000000;
-			text-decoration: none;
-			font-weight: bold;
-			margin-left:0.5em;
-			font-size:14px;	
-		}
-
-
-		.modemenu .active a {
-			color: #4f9ed3;
-			font-weight:bold;
-			background: transparent url(images/right_black.png) no-repeat 0% 50%;
-		}		
-		.modemenu .active a:hover {
-			color: #4f9ed3;
-			font-weight:bold;
-			background: transparent url(images/right.png) no-repeat 0% 50%;
-		}		
-		
-		.modemenu li:hover {
-			background: transparent url(images/black_60.png);
-		}
-		.modemenu a:hover,
-		.modemenu a:focus {
-			color: #ffffff; /*#4f9ed3;*/
-			font-weight:bold;
-			background: transparent url(images/right.png) no-repeat 0% 50%;
-		}
-	/*** end mode menu styles ***/
-	
+/**** begin menu styles ****/	
 	/*** begin main menu styles ***/
-		.mainmenu {	
+		#mainmenu {	
 			float: left;
 			width: auto;
 			background: transparent;
 			color: #ffffff;
 		}
 
-		.mainmenu div {
-			float: left;					
+		#mainmenu div {
+			float: left;							
 		}
-		.mainmenu li {
+		#mainmenu li {
 			white-space: nowrap;
-		}
+		}		
 		/** first level styles **/		
-			.mainmenu div a {
+			#mainmenu div a {
 				padding:0;
 				padding-left:0.5em;
 				color: #ffffff;
 				text-decoration: none;
 				font-weight: bold;
+				margin-right:0.5em;
 			}
-			.mainmenu div:hover > ul { /*show dropdown menus on hover*/
-					display: block;
+			#mainmenu div.tiny a{
+				font-weight:normal;
+				font-size:0.8em;
+				margin-right:0px;
 			}
-			.mainmenu div:hover > a{
-					color: #4f9ed3;
+			#mainmenu div:hover > ul { /*show dropdown menus on hover*/
+				display:block;
 			}
-			.mainmenu div.preactive > a {
+			#mainmenu div:hover > a{
 				color: #4f9ed3;
-				font-weight: bold;
+			}
+			#mainmenu div.preactive > a {
+				color: #4f9ed3;
 			}
 			/** dropdown level styles **/					
-				.mainmenu div ul { 
+				#mainmenu div ul { 
 					display: none;
 					position: absolute;
 					background: transparent url(images/black_60.png);
 					list-style-type: none;
 					z-index:20;
 				}
-				.mainmenu li a{ 
+				#mainmenu li a{ 
 					font-size:0.8em;
 					line-height:1.5;
-					font-weight:bold;
 		        		margin-left:0em;
 					padding-right:25px;	/*space for the submenu marker*/
 		        		display:block;
 				}
-				.mainmenu ul li:hover,
-				.mainmenu ul li:focus{ /*menu item background, dropdown panels, active*/
+				#mainmenu ul li.show_left>a{ /* for submenus showing on the left*/
+					font-size:0.8em;
+					line-height:1.5;
+		        		margin-left:0em;
+					padding-left:25px;	/*space for the submenu marker*/
+		        		display:block;
+				}
+				#mainmenu ul li:hover,
+				#mainmenu ul li:focus{ /*menu item background, dropdown panels, active*/
 					background:transparent url(images/black_60.png);
 				}
-				.mainmenu ul li:hover > ul{ /*show submenus on hover*/
+				#mainmenu ul li:hover > ul{ /*show submenus on hover*/
 					display: block;
 				}
 		
-				.mainmenu ul li:hover > a{
+				#mainmenu ul li:hover > a{
 					color: #4f9ed3;
 				}	
-				.mainmenu li a.hasSub{ /* show submenu marker */
+				#mainmenu li a.hasSub{ /* show submenu marker */
 					background:transparent url(images/right.png) 100% 50% no-repeat;
-				}				
-				.mainmenu ul li > ul { /*submenus appear to the right*/
+				}	
+				#mainmenu ul li.show_left > a.hasSub{ /* show submenu marker */
+					background:transparent url(images/left.png) 0% 50% no-repeat;
+				}			
+				#mainmenu ul li > ul { /*submenus appear to the right*/
 					left: 100%;
 					margin-top:-1.2em; /* line-height times font-size*/
 					margin-left:-7px;  /*should not overlap the submenu marker*/
+				}
+				#mainmenu ul li > ul.show_left { /*show submenu on the left*/
+					left:auto;
+					right:100%;
+					margin-right:-7px;					
 				}
 		
 			/** submenu frame **/
@@ -280,7 +279,102 @@ div#maincontent ul {
 					width:5px;
 					background:transparent url(images/black_lr.png);
 				}				
-	/*** end main menu styles ***/						
+	/*** end main menu styles ***/
+	/*** begin mode menu styles ***/
+		.modemenu ul {
+			width: 100%;
+			list-style-type: none;
+		}
+
+		.modemenu li {
+			display:block;	
+		}
+
+		.modemenu a{
+			display:block;
+			text-align:right;
+			padding:0;
+			padding-right:1em;
+			margin-left:1em;
+			margin-right:0em;
+			color: #000000;
+			text-decoration: none;
+			font-weight: bold;
+			font-size:14px;
+		}
+
+		.modemenu .active a {
+			color: #4F9ED3;
+			font-weight:bold;
+			background: transparent url(images/right_black.png) no-repeat 0% 50%;
+		}
+		.modemenu .active a:focus,		
+		.modemenu .active a:hover {
+			color: #ffffff;
+			font-weight:bold;
+			background: transparent url(images/right.png) no-repeat 0% 50%;
+		}		
+		
+		.modemenu li:focus,
+		.modemenu li:hover {
+			background: #4F9ED3;
+		}
+		.modemenu a:hover,
+		.modemenu a:focus {
+			color: #ffffff;
+			font-weight:bold;
+			background: transparent url(images/right.png) no-repeat 0% 50%;
+		}
+	/*** end mode menu styles ***/
+	/*** begin changes styles ***/
+		/*styles matched with #mainmenu */
+		.changes {
+			text-align:right;
+			position:relative;
+		}
+		.changes ul{	
+			position:absolute;
+			left:100%;
+			margin-top:-1.5em;
+			background: transparent url(images/black_60.png);
+			display:none;
+			list-style:none;
+			color:#ffffff;	
+			white-space:nowrap;		
+		}
+		.changes:hover > ul {
+			display:block;
+		}
+
+		.changes ul li:hover,
+		.changes ul li:focus{ /*menu item background, dropdown panels, active*/
+			background:transparent url(images/black_60.png);
+		}
+		.changes a {
+			font-weight:bold;
+			text-decoration:none;
+			color:#000000;
+			padding-right:1em;
+			background: transparent url(images/right_black.png) 100% 50% no-repeat;			
+		}
+		.changes a.no_changes{
+			background: transparent none;
+		}		
+		.changes a:hover {
+			color:#ffff8800;
+		}
+		.changes li a { 
+			color:#ffffff;
+			font-size:1em;
+			line-height:1.5;
+			font-weight:bold;
+        		padding: 0px 0.5em;
+        		display:block;
+			text-decoration:none;
+		}
+		
+
+						
 /**** end menu styles****/
 
 
@@ -288,24 +382,6 @@ div#maincontent ul {
 .pathbar {
 	display: none;
 }
-
-
-/* alte Menu-styles, werden komplett neu gemacht!
-
-
-
-.mainmenu li:hover > span > a,
-.mainmenu div:hover > a {
-	background: transparent url(images/black_60.png);
-}
-
-
-
-
-
-
-
- bis hier die alten Menu styles*/
 
 
 #content {
@@ -400,13 +476,27 @@ td.rb{
 #sidebar{
 	margin-top:-22px;
 	margin-bottom:-22px;
-	margin-right:-22px;
+	margin-right:-43px;
 /* the content frame actually is too wide,
 that is why the sidebar space needs to be enlarged*/
-	padding-left:1em;
 	font-size:12px;
-	font-weight:normal;	
+	font-weight:normal;
 }
+
+#sidebar  h1 {
+	font-size:100%;
+	border-bottom-width:1px;
+	border-bottom-style:solid;
+	border-bottom-color:#000000;
+	margin:1em;
+	display:block;
+	text-align:left;
+}
+
+#sidebar p {
+	padding:0em 1em;
+}
+
 /**** End Sidebar ****/
 
 
@@ -823,7 +913,7 @@ ul.cbi-apply {
 	margin-left: -100% !important;
 }
 
-* html div.menubar {
+* html div#mainbar {
 	margin-left: -100% !important;
 	width: 200% !important;
 }
@@ -833,32 +923,32 @@ ul.cbi-apply {
 	width: 160% !important;
 }
 
-* html div.mainmenu div.hover ul,
-* html div.mainmenu div li.hover ul,
-* html div.mainmenu div li li.hover ul,
-* html div.mainmenu div li li li.hover ul,
-* html div.mainmenu div li li li li.hover ul {
+* html div#mainmenu div.hover ul,
+* html div#mainmenu div li.hover ul,
+* html div#mainmenu div li li.hover ul,
+* html div#mainmenu div li li li.hover ul,
+* html div#mainmenu div li li li li.hover ul {
 	display: block !important;
 	margin-left: 3em;
 }
 
-* html div.mainmenu div.hover ul {
+* html div#mainmenu div.hover ul {
 	margin-left: 0;
 }
 
-* html div.mainmenu .hover ul ul,
-* html div.mainmenu .hover ul ul ul,
-* html div.mainmenu .hover ul ul ul ul,
-* html div.mainmenu .hover ul ul ul ul ul {
+* html div#mainmenu .hover ul ul,
+* html div#mainmenu .hover ul ul ul,
+* html div#mainmenu .hover ul ul ul ul,
+* html div#mainmenu .hover ul ul ul ul ul {
 	display: none !important;
 }
 
-* html div.mainmenu li {
+* html div#mainmenu li {
 	height: 1em !important;
 	width: 10em !important;
 }
 
-* html .mainmenu {
+* html #mainmenu {
 	height: 1.8em;
 }
 

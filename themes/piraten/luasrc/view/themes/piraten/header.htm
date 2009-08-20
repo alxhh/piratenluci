@@ -1,4 +1,12 @@
 <%#
+This file has been modified by
+Alexander Morlang
+Andreas Pittrich <andreas.pittrich@web.de>
+in behalf of the german pirate party (Piratenpartei)
+www.piratenpartei.de
+
+Original Disclaimer:
+-------
 LuCI - Lua Configuration Interface
 Copyright 2008 Steven Barth <steven@midlink.org>
 Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
@@ -41,62 +49,58 @@ require("luci.http").prepare_content("text/html")
 <head>
 	<link rel="stylesheet" type="text/css" href="<%=media%>/cascade.css" />
 	<% if node and node.css then %><link rel="stylesheet" type="text/css" href="<%=resource%>/<%=node.css%>" /><% end %>
-	<link rel="shortcut icon" href="<%=media%>/images/favicon.ico" />
+	<link rel="shortcut icon" href="<%=media%>/images/logo32x32.png" />
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
 	<meta http-equiv="content-script-type" content="text/javascript" />
 	<title><%=striptags( hostname .. ( (node and node.title) and ' - ' .. node.title or '')) %> - LuCI</title>
-
-	<!--[if lt IE 7]>
-		<script type="text/javascript">
-			function setup_hover() {
-				function ie_hover(e) {
-					e.onmouseover = function() { this.className = "hover" }
-					e.onmouseout  = function() { this.className = null    }
-				}
-
-				var lis  = document.getElementById("mainmenu").getElementsByTagName("LI");
-				var divs = document.getElementById("mainmenu").getElementsByTagName("DIV");
-
-				for( var i = 0; i < lis.length;  i++ ) ie_hover( lis[i]  );
-				for( var i = 0; i < divs.length; i++ ) ie_hover( divs[i] );
-			}
-		</script>
-	<![endif]-->
 </head>
-<body onload="window.setup_hover && setup_hover()">
 
-<!-- Begin Main Background_pattern Layer -->
+<body>
+
+<!-- Begin bckground layers -->
 <div id="main_bg_pattern">
-	<!-- Begin Main Background Layer -->
-	<div id="main_bg">	
-
+<div id="main_bg">
+	<!-- Begin Header -->
+	<div id="logo">
+		<img src="<%=media%>/images/logos_merged.png"/>
 	</div>
-	<!-- end Main Background Layer -->
+	<div id="header">
+		<img id="heading" src="<%=media%>/images/piratenfreifunk.png"/>
+	</div>
 
-<!-- Begin Header -->
-<div style="position:absolute; top:0px;left:0px; width:100%;overflow:visible">
-
-<div id="header">
-	Piratenfreifunk
-</div>
-
-<div class="pathbar separator black whitetext bold">
-<%:path%>: <%
+	<div class="pathbar separator black whitetext bold">
+		<%:path%>: 
+<%-
 local c = tree
 local url = controller
 for k,v in pairs(request) do
 	if c.nodes and c.nodes[v] then
 		c = c.nodes[v]
 		url = url .. "/" .. v
-	%><a href="<%=url%>"><%=c.title or v%></a> <% if k ~= #request then %>&#187; <% end
+-%>
+		<a href="<%=url%>"><%=c.title or v%></a> 
+<%- 
+		if k ~= #request then 
+-%>
+			&#187; 
+<%- 
+		end
 	end
 end
 %>
-</div>
-
-<div class="menubar">
-	<div id="mainmenu" class="mainmenu">
+	</div>
+	<!--- begin menu bar --->
+	<div id="menubar">
+		<!--- begin main menu --->
+		<div id="mainmenu">
 <%-
+local function showleft(d)
+	if d%2==1 or d==0 then
+		return('')
+	else
+		return('show_left')
+	end
+end
 
 local function countsubs(node)
 	local count=0
@@ -108,7 +112,7 @@ local function countsubs(node)
 	return(count)
 end
 		
-local function submenu(prefix, node, firstlevel)
+local function submenu(prefix, node, depth)
 	if not node.nodes or node.hidden then
 		return false
 	end
@@ -123,45 +127,62 @@ local function submenu(prefix, node, firstlevel)
 
 	table.sort(index, function(a, b) return a.order < b.order end)
 
-	if count > 0 then
+	if count > 0 then 
+-%>
+<ul class="<%=showleft(depth)%>">
+<%- 		
+		if depth > 0 then 
+%>	
+	<!--- begin upper round corners --->
+	<li class="upper_corners">
+		<table>
+			<tr>
+				<td class="l"></td>
+				<td class="c"></td>
+				<td class="r"></td>
+			</tr>
+		</table>
+	</li>
+	<!--- end upper round corners --->
+<%- 		
+		end 
+		
+		for j, v in pairs(index) do
+			if not v.hidden and #v.name > 0 then
+				local nnode = node.nodes[v.name]
+				local href = controller .. prefix .. v.name
+				href = (nnode.query) and href .. luci.http.build_querystring(nnode.query) or href
 %>
-	<ul>
-	<% if not firstlevel then %>	
-		<li class="upper_corners">
-			<table>
-				<tr>
-					<td class="l"></td>
-					<td class="c"></td>
-					<td class="r"></td>
-				</tr>
-			</table>
-		</li>
-	<% end %>
-	<%- for j, v in pairs(index) do
-		if not v.hidden and #v.name > 0 then
-			local nnode = node.nodes[v.name]
-			local href = controller .. prefix .. v.name
-			href = (nnode.query) and href .. luci.http.build_querystring(nnode.query) or href
-		%>
-		<li>
-			<a  	class="	<% if nnode._menu_selected then %>active <%end%> 
-				 	<% if countsubs(nnode) > 0 then %>hasSub <%end%>
-				"	
-				href="<%=luci.util.pcdata(href)%>"><%=nnode.title%></a>
-			<%- submenu(prefix .. v.name .. "/", nnode, false) %>
-		</li>
-		<%- end %>
-	<%- end %>
-		<li class="lower_corners">
-			<table>
-				<tr>
-					<td class="l"></td>
-					<td class="c"></td>
-					<td class="r"></td>
-				</tr>
-			</table>
-		</li>
-	</ul>
+
+	<li 	class="<%=showleft(depth+1)%>">
+		<a  	class="	<% if nnode._menu_selected then %>active <%end%> 
+			 	<% if countsubs(nnode) > 0 then %>hasSub <%end%>
+			"	
+			href="<%=luci.util.pcdata(href)%>"
+		>
+						<%=nnode.title%>
+		</a>
+<%- 
+				
+		submenu(prefix .. v.name .. "/", nnode, depth+1) 
+%>
+	</li>
+<%- 
+			end 
+		end 
+%>
+	<!--- begin lower round corners --->
+	<li class="lower_corners">
+		<table>
+			<tr>
+				<td class="l"></td>
+				<td class="c"></td>
+				<td class="r"></td>
+			</tr>
+		</table>
+	</li>
+	<!--- end lower round corners --->
+</ul>
 <%-
 	end
 end
@@ -178,88 +199,118 @@ if cattree and cattree.nodes then
 		node = cattree.nodes[k.name]
 		if not node.hidden and node.title and node.target then
 			local href = controller.."/"..category.."/"..k.name
-			href = (k.query) and href .. luci.http.build_querystring(k.query) or href %>
-		
-		<div<% if node._menu_selected then %> class="preactive"<%end%>><a href="<%=href%>"><%=node.title%></a>
-				<%submenu("/" .. category .. "/" .. k.name .. "/", node, true)%>
+			href = (k.query) and href .. luci.http.build_querystring(k.query) or href 
+%>		
+			<div 	class="	<% if node._menu_selected then %> preactive<%end-%>
+					<% if countsubs(cattree)>6 then %> tiny <%end-%>
+				"
+			>
+				<a href="<%=href%>"><%=node.title%></a>
+<%-
+				submenu("/" .. category .. "/" .. k.name .. "/", node, 0)
+%>
 			</div>
-<%		end
+<%-		end
 	end
 end
 %>
 	
+		</div>
+		<!--- end main menu --->
 	</div>
+	<!--- end menu bar --->
 	
+	<!--- end header --->
+	<!--- begin content --->
 
-
-
-	<br class="clear" />
-	</div>
-</div>
-<!-- END Header -->
-
-<!-- Sidebar -->
-<div id="sidebar_container">
-	<table id="sidebar_content_frame">
-		<tr><td class="ct"></td><td class="rt"></td></tr>
-		<tr>
-			<td class="main">
-				<div id="sidebar">
-					<div class="modemenu">				
-						<ul>	<%
-							for k,node in pairs(tree.nodes) do
-								if node.title and not node.hidden then %>
-									<li<% if request[1] == k then %> class="active"<%end%>><a href="<%=controller%>/<%=k%>"><%=node.title%></a></li>
-							<%	end
-							end%>
-						</ul>
-					</div>
-					<div style="background-color:#000000; height:1px;margin:1em 0">
-					</div>
-					<%
-						if tree.nodes[category] and tree.nodes[category].ucidata then
-							local ucic = 0
-	
-							for i, j in pairs(require("luci.model.uci").cursor():changes()) do
-								for k, l in pairs(j) do
-									for m, n in pairs(l) do
-										ucic = ucic + 1;
-									end
-								end
-							end
-					%>
-
-					<div class="mainmenu" style="float:right">
-						<div > 
-							
-							<% if ucic > 0 then %>
-							<a style="text-align:right" class="warning" href="<%=controller%>/<%=category%>/uci/changes"><%:unsavedchanges%>: <%=ucic%></a>							
-							<% submenu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"],false) -%>
-							<% else %>
-								<li><a href="#"><%:changes%>: 0</a></li>
-							<% end %>
+	<!-- begin sidebar -->
+	<div id="sidebar_container">
+		<!--- begin sidebar frame --->
+		<table id="sidebar_content_frame">
+			<tr><td class="ct"></td><td class="rt"></td></tr>
+			<tr>
+				<td class="main">
+					<div id="sidebar">				
+<%-
+if tree.nodes[category] and tree.nodes[category].ucidata then
+	local ucic = 0
+	for i, j in pairs(require("luci.model.uci").cursor():changes()) do
+		for k, l in pairs(j) do
+			for m, n in pairs(l) do
+				ucic = ucic + 1;
+			end
+		end
+	end
+%>
+						<div class="changes">				
+<%
+	if ucic > 0 then 
+%>					
+			
+							<a class="warning" href="<%=controller%>/<%=category%>/uci/changes"><%:unsavedchanges%>: <%=ucic%></a>							
+<%- 
+		submenu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], 1)
+	else 
+%>
+							<a class="no_changes" href="#"><%:changes%>: 0</a>
+<%- 
+	end 
+%>
 						</div>
+						<div class="hsep">
+						</div>						
+<%- 
+end 
+%>
+						<!--- begin mode menu --->
+						<div class="modemenu">				
+							<ul>	
+<%-
+							for k,node in pairs(tree.nodes) do
+								if node.title and not node.hidden then 
+%>
+									<li<% if request[1] == k then %> class="active"<%end%>><a href="<%=controller%>/<%=k%>"><%=node.title%></a></li>
+<%-								end
+							end
+%>
+							</ul>
+						</div>
+						<!--- end mode menu --->
+
+						<h1><%=luci.version.distname%></h1>
+						<p>
+							<%=luci.version.distversion%><br />
+							<%:load%>: <%="%.2f" % load1%> <%="%.2f" % load5%> <%="%.2f" % load15%><br />
+							<%:hostname%>: <%=hostname%>
+						</p>
+						<img 
+							src="<%=media%>/images/piratenpartei_logo.png" alt="Piratenpartei"
+							style="margin-right:auto; margin-top:3em";
+						/>
+						
 					</div>
-					<% end %>
-				</div>
-			</td>
-			<td class="rc"></td></tr>
-		<tr><td class="cb"></td><td class="rb"></td></tr>
-	</table>
-</div>
-<!-- End Sidebar -->
-<!-- Begin main content-->
-<div id="main_content_container"> 
-<table id="main_content_frame">
- <tr>
-  <td class="lt">
-  </td>
-  <td class="ct">
-  </td>  
-  <td class="rt">
- </tr>
- <tr>
-  <td class="lc">
-  </td>
-  <td class="main">
-<div id="maincontent">
+				</td>
+				<td class="rc"></td>
+			</tr>
+			<tr><td class="cb"></td><td class="rb"></td></tr>
+		</table>
+		<!-- end sidebar frame -->
+	</div>
+	<!-- end Sidebar -->
+	<!-- begin main content-->
+	<div id="main_content_container"> 
+		<!begin main content frame -->
+		<table id="main_content_frame">
+			<tr>
+				<td class="lt">
+  				</td>
+	  			<td class="ct">	
+  				</td>  
+  				<td class="rt">
+ 				</tr>
+ 			<tr>
+  				<td class="lc">
+  				</td>
+  				<td class="main">
+					<!--- begin ctual main content -->
+					<div id="maincontent">
