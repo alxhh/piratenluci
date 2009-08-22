@@ -3,6 +3,7 @@
 	padding: 0;
 }
 
+
 /**** begin basic background layout setting ****/
 	/* there are three background layers:
 		* the body using pirate_blue.png as background image.
@@ -30,11 +31,12 @@
 	}
 
 	#main_bg {
+		position:relative;
 		background: url(images/PF_background.png) no-repeat;
 		top:0px;
 		left:0px;
 		width:100%;
-		min-height:500px;
+		min-height:100%;
 		z-index:0;
 	}
 
@@ -43,6 +45,10 @@
 		left:32px;
 		top:59px;
 		background: transparent;
+	}
+	
+	#heading {
+		padding-left:20%; /* in addtion to the absolute header padding */
 	}
 /**** end basic background layout setting ****/
 
@@ -90,8 +96,9 @@ div#maincontent ul {
 		*
 		* the header is used for the heading and the skyline background.
 		* below that lies the menubar providing space for main menu and mode menu.
-		* below the menubar lie the container for the sidebar(left) 
-		* and the container for the main content div(right).
+		* below the menubar lies a table including 
+			* the container for the sidebar(left) 
+			* the container for the main content div(right).
 	   padding and margin are matched with the background images.		
 	*/
 
@@ -102,11 +109,9 @@ div#maincontent ul {
 		font-weight:800;
 		color:#ffffff;
 		vertical-align:middle;
-		padding-left:300px;	/* with this padding the heading won't be placed over the logo*/
-		padding-right:300px;	/* the heading will still be centered as best as possible*/
+		padding-left:100px;	
 		height:110px;
 		padding-top:26px;
-		text-align:center;
 	}
 
 	#menubar {  /*make that an id?*/
@@ -117,21 +122,25 @@ div#maincontent ul {
 		height:25px;
 		font-size:16px;	
 	}
-	
-	#sidebar_container{
-		position:absolute;
-		left:0px; 
-		top:280px; 
-		width:200px;
-		float:left;
+	#content_table {
+		table-layout:fixed;
 		z-index:5;
+		border-collapse:collapse;
+		margin-bottom:20px;
+		width:100%;
+	}
+	#sidebar_container{
+		/*position:absolute;*/
+		/*left:0px; */
+		padding-top:115px; 
+		width:200px;
 		font-size:20px;
+		vertical-align:top;
 	}
 
 	#main_content_container{
-		margin-left:211px;
-		margin-top:14px;
-		z-index:5;
+		padding: 14px 11px;
+		vertical-align:top;
 	}
 /**** end basic content layout ****/
 
@@ -341,14 +350,16 @@ div#maincontent ul {
 			list-style:none;
 			color:#ffffff;	
 			white-space:nowrap;		
+			z-index:10;
 		}
 		.changes:hover > ul {
 			display:block;
 		}
 
 		.changes ul li:hover,
-		.changes ul li:focus{ /*menu item background, dropdown panels, active*/
+		.changes ul li:focus{ 
 			background:transparent url(images/black_60.png);
+			color:#4F9ED3;			
 		}
 		.changes a {
 			font-weight:bold;
@@ -361,7 +372,7 @@ div#maincontent ul {
 			background: transparent none;
 		}		
 		.changes a:hover {
-			color:#ffff8800;
+			color:#4F9ED3;		
 		}
 		.changes li a { 
 			color:#ffffff;
@@ -403,7 +414,6 @@ table#sidebar_content_frame{
 	width:100%;
 	position:relative;
 	border-collapse:collapse;
-	border-spacing:0px;
 }
 
 td.main{
@@ -416,7 +426,7 @@ td.lt{
 	padding:0px;
 	width:54px;
 	height:42px;
-	background:transparent url(images/lt.png) no-repeat 0% 0%;
+	background:transparent url(images/box_corners.png) no-repeat 0% 0%;
 }
 
 td.ct{
@@ -429,7 +439,7 @@ td.rt{
 	padding:0px;
 	width:54px;
 	height:42px;
-	background:transparent url(images/rt.png) no-repeat 100% 0%;
+	background:transparent url(images/box_corners.png) no-repeat 100% 0%;
 }
 
 
@@ -450,7 +460,7 @@ td.lb{
 	padding:0px;
 	width:54px;
 	height:42px;	
-	background:transparent url(images/lb.png) no-repeat 0% 100%;
+	background:transparent url(images/box_corners.png) no-repeat 0% 100%;
 }
 
 td.cb{
@@ -463,7 +473,7 @@ td.rb{
 	padding:0px;
 	width:54px;
 	height:42px;
-	background:transparent url(images/rb.png) no-repeat 100% 100%;
+	background:transparent url(images/box_corners.png) no-repeat 100% 100%;
 }
 
 /**** End content frames ****/
