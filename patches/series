@@ -1,4 +1,3 @@
-atheros-dir300-switch,patch
 backport-lua-rev5,patch
 backport-r17119,patch
 brcm-2.4-remove-netfilter-pptp,patch
