@@ -9,7 +9,7 @@ timestamp=`date "+%F_%H-%M"`
 echo $timestamp >timestamp
 
 #get basic repos
-git clone git://nbd.name/packages.git
+#git clone git://nbd.name/packages.git
 git clone git://github.com/alxhh/piratenluci.git
 
 for arch in $archs;
@@ -28,5 +28,5 @@ do
 	cp piratenluci/buildstuff/$arch/build.config 8.09/.config
 	config_arch=`( . 8.09/.config; echo $CONFIG_ARCH;)`
 	echo src/gz freifunk http://dev.dd19.de/~alx/piraten/$timestamp/$arch/packages/$config_arch>>8.09/files/etc/opkg.conf
-	mv 8.09 $arch
+	mv 8.09 $timestamp-$arch
 done
