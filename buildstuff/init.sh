@@ -7,6 +7,7 @@ mkdir dl
 
 timestamp=`date "+%F_%H-%M"`
 echo $timestamp >timestamp
+date +"%Y/%m/%d %H:%M">VERSION.txt
 
 #get basic repos
 #git clone git://nbd.name/packages.git
