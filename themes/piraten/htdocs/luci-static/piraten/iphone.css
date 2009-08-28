@@ -1,0 +1,64 @@
+.high_res_only{
+	display:none !important;
+}
+
+#main_bg_pattern {
+	position:absolute;
+	background: url(images/PF_background_pattern.png) repeat-x;
+	top:0px;
+	left:0px;
+	width:980px;
+        min-height:100%;
+	z-index:0;		
+}
+
+#heading{
+	margin-left:285px !important;
+}
+
+#header{
+	padding-left:0px !important;
+}
+
+#menubar{
+	visibility:hidden;
+}
+
+#sidebar_container{
+	display:none;
+}
+
+#adbar_low_res_container{
+	display:block !important;
+}
+#main_content_container{
+	margin-top:50px !important;
+}
+
+.lt_spec{
+	padding:0px;
+	width:54px;
+	height:42px;
+	background:transparent url(images/lt_round.png) no-repeat 0% 0% !important;
+}
+
+#content {
+	margin-left:0px !important; 
+}
+
+#maincontent{
+	font-size:30px!important;
+}
+
+input[type="submit"]{
+	width:40%;
+	padding-top:10px;
+	padding-bottom:10px;
+	margin: 0px 4%;
+	font-size:50px;
+	font-family: impact, sans-serif;
+	background-color:#ff8800;
+	border-color:#000000;
+}
+
+

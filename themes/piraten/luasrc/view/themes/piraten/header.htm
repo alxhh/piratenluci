@@ -48,6 +48,7 @@ require("luci.http").prepare_content("text/html")
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<link rel="stylesheet" type="text/css" href="<%=media%>/cascade.css" />
+	<link rel="stylesheet"  media="only screen and (max-device-width: 480px)" href="iphone.css" href="<%=media%>/iphone.css" type="text/css" /> 
 	<% if node and node.css then %><link rel="stylesheet" type="text/css" href="<%=resource%>/<%=node.css%>" /><% end %>
 	<link rel="shortcut icon" href="<%=media%>/images/logo32x32.png" />
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
@@ -89,9 +90,10 @@ for k,v in pairs(request) do
 end
 %>
 	</div>
-	<!--- begin menu bar --->
+	<!-- End header -->
+	<!-- Begin menu bar -->
 	<div id="menubar">
-		<!--- begin main menu --->
+		<!-- Begin main menu -->
 		<div id="mainmenu">
 <%-
 local function showleft(d)
@@ -133,7 +135,7 @@ local function submenu(prefix, node, depth)
 <%- 		
 		if depth > 0 then 
 %>	
-	<!--- begin upper round corners --->
+	<!-- Begin upper round corners -->
 	<li class="upper_corners">
 		<table>
 			<tr>
@@ -143,7 +145,7 @@ local function submenu(prefix, node, depth)
 			</tr>
 		</table>
 	</li>
-	<!--- end upper round corners --->
+	<!-- End upper round corners -->
 <%- 		
 		end 
 		
@@ -171,7 +173,7 @@ local function submenu(prefix, node, depth)
 			end 
 		end 
 %>
-	<!--- begin lower round corners --->
+	<!-- Begin lower round corners -->
 	<li class="lower_corners">
 		<table>
 			<tr>
@@ -181,7 +183,7 @@ local function submenu(prefix, node, depth)
 			</tr>
 		</table>
 	</li>
-	<!--- end lower round corners --->
+	<!-- End lower round corners -->
 </ul>
 <%-
 	end
@@ -216,21 +218,58 @@ end
 %>
 	
 		</div>
-		<!--- end main menu --->
+		<!-- end main menu -->
 	</div>
-	<!--- end menu bar --->
-	
-	<!--- end header --->
-	<!--- begin content --->
+	<!-- end menu bar -->
+
+	<!-- Begin adbar for low_res frame -->
+	<div id="adbar_low_res_container" class="low_res_only">
+		<table class="main_content_frame low_res"> <!-- same style as main content frame-->
+			<tr>
+				<td class="lt">
+  				</td>
+	  			<td class="ct">	
+  				</td>  
+  				<td class="rt">
+ 				</tr>
+ 			<tr>
+  				<td class="lc">
+  				</td>
+  				<td class="main">
+					<div id="adbar_low_res">
+						<!--- Begin adbar low_res content -->
+						<div id="klarmachen">
+							Klarmachen zum Ändern!
+						</div>
+						<!--- End adbar low_res content --->
+					</div>
+  				</td>
+  				<td class="rc">
+  				</td>
+			</tr>
+ 			<tr>
+  				<td class="lb">
+  				</td>
+  				<td class="cb">
+  				</td>  
+  				<td class="rb">
+  				</td>
+ 			</tr>
+		</table>
+	</div>
+	<!-- End adbar for low_res frame -->
+
+	<!-- begin content -->
 	<table id="content_table">
 		<tr>
 			<!-- begin sidebar -->
-			<td id="sidebar_container">
+			<td id="sidebar_container" class="high_res_only">
 				<!--- begin sidebar frame --->
-				<table id="sidebar_content_frame">
+				<table class="sidebar_content_frame">
 					<tr><td class="ct"></td><td class="rt"></td></tr>
 					<tr>
 						<td class="main">
+							<!-- begin sidebar content -->
 							<div id="sidebar">				
 <%-
 if tree.nodes[category] and tree.nodes[category].ucidata then
@@ -289,20 +328,41 @@ end
 									style="margin-right:auto; margin-top:3em";
 								/>				
 							</div>
+							<!-- end sidebar content -->
 						</td>
 						<td class="rc"></td>
 					</tr>
 					<tr><td class="cb"></td><td class="rb"></td></tr>
 				</table>
-			<!-- end sidebar frame -->
+				<!-- end sidebar frame -->
+				<!--- begin adbar for high res frame --->
+				<table class="sidebar_content_frame"> <!-- same style as sidebar_content_frame -->
+					<tr><td class="ct"></td><td class="rt"></td></tr>
+					<tr>
+						<td class="main">							
+							<div id="adbar_high_res">
+								<!-- begin adbar high res content -->
+								<div id="klarmachen">
+									Klarmachen <br>
+									zum Ändern!
+								</div>
+								<!-- end adbar high res content -->
+							</div>
+							
+						</td>
+						<td class="rc"></td>
+					</tr>
+					<tr><td class="cb"></td><td class="rb"></td></tr>
+				</table>
+				<!-- end adbar for high res frame -->			
 			</td>
 			<!-- end Sidebar -->
 			<!-- begin main content-->
 			<td id="main_content_container"> 
 			<!-- begin main content frame -->
-				<table id="main_content_frame">
+				<table class="main_content_frame">
 					<tr>
-						<td class="lt">
+						<td class="lt_spec">
   						</td>
 	  					<td class="ct">	
   						</td>  
