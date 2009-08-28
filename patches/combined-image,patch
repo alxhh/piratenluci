@@ -1,0 +1,57 @@
+Index: 8.09/scripts/combined-image.sh
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ 8.09/scripts/combined-image.sh	2009-08-21 20:40:56.597386576 +0200
+@@ -0,0 +1,12 @@
++#!/bin/sh
++
++[ -f "$1" -a -n "$2" -a -f "$3" -a -n "$4" ] || {
++	echo "Usage: $0 /path/to/kernel.image kernel_name /path/to/rootfs.image rootfs_name [output-file]"
++	exit 1
++}
++
++( printf "FF%08x%-16s%08x%-16s%65486s" \
++	$(stat -c "%s" "$1") ${2:-vmlinux.bin.l7} \
++	$(stat -c "%s" "$3") ${4:-rootfs} "";
++	cat "$1" "$3"
++) > ${5:-openwrt-atheros-combined.img}
+Index: 8.09/target/linux/ar71xx/image/Makefile
+===================================================================
+--- 8.09.orig/target/linux/ar71xx/image/Makefile	2009-08-21 18:49:37.695810475 +0200
++++ 8.09/target/linux/ar71xx/image/Makefile	2009-08-21 20:40:56.673391326 +0200
+@@ -62,6 +62,13 @@
+ 	$(call Image/Build/$(1))
+ 	dd if=$(KDIR)/root.$(1) of=$(IMGNAME)-root.$(1) bs=128k conv=sync
+ 
++  ifeq ($(BOARD),ar71xx)
++	-sh $(TOPDIR)/scripts/combined-image.sh \
++		"$(BIN_DIR)/openwrt-$(BOARD)-vmlinux.lzma" "kernel" \
++		"$(BIN_DIR)/openwrt-$(BOARD)-root.$(1)" "rootfs" \
++		"$(BIN_DIR)/openwrt-ar71xx-combined.img"
++  endif
++
+ 	$(call Image/Build/Profile/WP543,$(1))
+ endef
+ 
+Index: 8.09/target/linux/atheros/image/Makefile
+===================================================================
+--- 8.09.orig/target/linux/atheros/image/Makefile	2009-08-21 18:49:37.715811725 +0200
++++ 8.09/target/linux/atheros/image/Makefile	2009-08-21 20:40:56.709393576 +0200
+@@ -41,6 +41,17 @@
+ 		-r $(BIN_DIR)/openwrt-$(BOARD)-root.$(1) \
+ 		-o $(BIN_DIR)/openwrt-$(BOARD)-ubnt2-pico2-$(1).bin
+ 
++  ifeq ($(BOARD),atheros)
++	-sh $(TOPDIR)/scripts/combined-image.sh \
++		"$(BIN_DIR)/openwrt-$(BOARD)-vmlinux.lzma" "vmlinux.bin.l7" \
++		"$(BIN_DIR)/openwrt-$(BOARD)-root.$(1)" "rootfs" \
++		"$(BIN_DIR)/openwrt-fonera-combined.img"
++
++	-sh $(TOPDIR)/scripts/combined-image.sh \
++		"$(BIN_DIR)/openwrt-$(BOARD)-vmlinux.lzma" "kernel" \
++		"$(BIN_DIR)/openwrt-$(BOARD)-root.$(1)" "rootfs" \
++		"$(BIN_DIR)/openwrt-ubiquity-combined.img"
++  endif
+ endef
+ 
+ $(eval $(call BuildImage))
