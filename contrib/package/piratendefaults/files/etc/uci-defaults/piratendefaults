@@ -1,6 +1,5 @@
 #!/bin/sh
 uci batch <<-EOF
-	set freifunk.upgrade.repository=http://dev.dd19.de/~alx/piraten/latest
 	set freifunk.community.homepage=http://berlin.piratenpartei.de
 	commit freifunk
 	set lucid.main.threadlimit=2
