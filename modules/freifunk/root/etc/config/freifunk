@@ -107,7 +107,7 @@ config community l59
 
 config community berlin
 	option name "Freifunk Berlin"
-	option homepage http://berlin.freifunk.net
+	option homepage http://berlin.piratenpartei.de
 	option ssid "olsr.freifunk.net"
 	option prefix "104"
 	option external freifunk_berlin
