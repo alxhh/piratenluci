@@ -270,7 +270,7 @@ function main.write(self, section, value)
 	tools.firewall_zone_add_interface("freifunk", device)
 
 
-	local new_hostname = "pirat-" .. ip:gsub("%.", "-")
+	local new_hostname = node_ip:string():gsub("%.", "-")
 	local old_hostname = sys.hostname()
 
 	uci:foreach("system", "system",
@@ -279,7 +279,7 @@ function main.write(self, section, value)
 			uci:set("system", s['.name'], "cronloglevel", "10")
 
 			-- Set hostname
-			if old_hostname == "OpenWrt" or old_hostname:match("^pirat-%d+-%d+-%d+-%d+$") then
+			if old_hostname == "OpenWrt" or old_hostname:match("^%d+-%d+-%d+-%d+$") then
 				uci:set("system", s['.name'], "hostname", new_hostname)
 				sys.hostname(new_hostname)
 			end
