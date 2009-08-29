@@ -4,5 +4,8 @@ uci batch <<-EOF
 	commit freifunk
 	set lucid.main.threadlimit=2
 	commit lucid
+	set qos.wan.upload=256
+	set qos.wan.download=2048
+	commit qos
 EOF
 	
