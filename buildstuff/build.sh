@@ -2,5 +2,5 @@
 #for bla in 200*; do (cd $bla; make;); done
 archs=`cat ARCHS.txt`
 timestamp=`cat timestamp`
-for bla in archs; do (cd $timestamp/$bla; make;);done
+for bla in $archs; do (cd $timestamp/$bla; make;);done
 
