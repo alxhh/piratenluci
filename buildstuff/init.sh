@@ -1,7 +1,7 @@
 #!/bin/bash
 #archs="brcm-2.4"
-archs="atheros"
-#archs="atheros brcm-2.4 x86"
+#archs="atheros"
+archs="atheros brcm-2.4 x86"
 echo $archs>ARCHS.txt
 # dirs
 mkdir dl
@@ -31,7 +31,7 @@ do
 	cd ..
 	cp piratenluci/buildstuff/$arch/build.config 8.09/.config
 	config_arch=`( . 8.09/.config; echo $CONFIG_ARCH;)`
-	echo src/gz freifunk http://dev.dd19.de/~alx/piraten/$timestamp/$arch/packages/$config_arch>>8.09/files/etc/opkg.conf
+	echo src/gz freifunk http://houston.dd19.de:81/~alx/piraten/$timestamp/$arch/packages/$config_arch>>8.09/files/etc/opkg.conf
 # update host
 	mkdir 8.09/files/etc/uci-defaults
 	echo uci set freifunk.upgrade.repository=http://houston.dd19.de/~alx/piraten/latest>8.09/files/etc/uci-defaults/piratenupdate
