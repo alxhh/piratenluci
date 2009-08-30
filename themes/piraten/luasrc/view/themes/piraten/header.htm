@@ -48,7 +48,7 @@ require("luci.http").prepare_content("text/html")
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<link rel="stylesheet" type="text/css" href="<%=media%>/cascade.css" />
-	<link rel="stylesheet"  media="only screen and (max-device-width: 480px)" href="iphone.css" href="<%=media%>/iphone.css" type="text/css" /> 
+	<link rel="stylesheet"  media="only screen and (max-device-width: 480px)" href="<%=media%>/iphone.css" type="text/css" /> 
 	<% if node and node.css then %><link rel="stylesheet" type="text/css" href="<%=resource%>/<%=node.css%>" /><% end %>
 	<link rel="shortcut icon" href="<%=media%>/images/logo32x32.png" />
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
@@ -63,10 +63,14 @@ require("luci.http").prepare_content("text/html")
 <div id="main_bg">
 	<!-- Begin Header -->
 	<div id="logo">
-		<a href="https://www.piratenpartei.de"<img src="<%=media%>/images/logos_merged.png" border="0"/></a>
+		<a href="https://piratenpartei.de">
+			<img src="<%=media%>/images/logos_merged.png" border="0"/>
+		</a>
 	</div>
 	<div id="header">
-		<a href="https://www.piratenpartei.de"><img id="heading" src="<%=media%>/images/piratenfreifunk.png" border="0"/></a>
+		<a href="https://piratenpartei.de">
+			<img id="heading" src="<%=media%>/images/piratenfreifunk.png" border="0"/>
+		</a>
 	</div>
 
 	<div class="pathbar separator black whitetext bold">
@@ -323,10 +327,13 @@ end
 							<%:load%>: <%="%.2f" % load1%> <%="%.2f" % load5%> <%="%.2f" % load15%><br />
 							<%:hostname%>: <%=hostname%>
 								</p>
-								<img 
-									src="<%=media%>/images/piratenpartei_logo.png" alt="Piratenpartei"
-									style="margin-right:auto; margin-top:3em";
-								/>				
+								<a href="https://www.piratenpartei.de">
+									<img 
+										src="<%=media%>/images/piratenpartei_logo.png" alt="Piratenpartei"
+										style="margin-right:auto; margin-top:3em";
+										border="0"
+									/>				
+								</a>
 							</div>
 							<!-- end sidebar content -->
 						</td>
