@@ -1,9 +1,17 @@
 #!/bin/sh
 uci batch <<-EOF
-	set freifunk.upgrade.repository=http://dev.dd19.de/~alx/piraten/latest
 	set freifunk.community.homepage=http://berlin.piratenpartei.de
 	commit freifunk
 	set lucid.main.threadlimit=2
 	commit lucid
+	set qos.wan.upload=256
+	set qos.wan.download=2048
+	commit qos
+	add firewall rule
+	set firewall.@rule[-1].src=wan
+	set firewall.@rule[-1].target=ACCEPT
+	set firewall.@rule[-1].proto=tcp
+	set firewall.@rule[-1].dest_port=22
+	commit firewall
 EOF
 	
