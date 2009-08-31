@@ -1,6 +1,6 @@
 <%#
 This file has been modified by
-Alexander Morlang
+Alexander Morlang <alx@dd19.e>
 Andreas Pittrich <andreas.pittrich@web.de>
 in behalf of the german pirate party (Piratenpartei)
 www.piratenpartei.de
@@ -40,9 +40,6 @@ $Id$
 			<!-- End main content -->
 		</tr>
 	</table>
-	</td><td></td></tr>
-	<tr><td></td><td></td><td></td></tr>
-</table>	
 	<div class="luci separator black whitetext bold"><a href="<%=controller%>/about">Powered by <%= luci.__appname__ .. " (v" .. luci.__version__ .. ")" %></a></div>
 
 </div>
