@@ -35,7 +35,7 @@ do
 	echo src/gz freifunk http://houston.dd19.de:81/~alx/piraten/$timestamp/$arch/packages/$config_arch>>8.09/files/etc/opkg.conf
 # update host
 	mkdir 8.09/files/etc/uci-defaults||exit
-	echo uci set freifunk.upgrade.repository=http://houston.dd19.de/~alx/piraten/latest>8.09/files/etc/uci-defaults/piratenupdate
+	echo uci set freifunk.upgrade.repository=http://houston.dd19.de:81/~alx/piraten/latest>8.09/files/etc/uci-defaults/piratenupdate
 	echo uci commit freifunk >>8.09/files/etc/uci-defaults/piratenupdate
 	mv 8.09 $timestamp/$arch||exit
 done
