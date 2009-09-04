@@ -2,4 +2,4 @@ config defaults interface
 	option netmask  255.240.0.0
 
 config defaults wifi_device
-	option channel 13
+	option channel 1
