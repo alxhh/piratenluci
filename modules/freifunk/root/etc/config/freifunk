@@ -129,7 +129,7 @@ config community potsdam
 	option splash_prefix "27"
 	option external freifunk_potsdam
 
-config community potsdam
+config community hamburg
 	option name "Freifunk Hamburg"
 	option homepage http://hamburg.piratenpartei.de
 	option ssid "hamburg.freifunk.net"
