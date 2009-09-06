@@ -29,10 +29,10 @@ do
 	cp -R ../piratenluci/patches .||exit
 	cp ../piratenluci/buildstuff/$arch/series patches/series||exit
 	quilt push -a||exit
-	cd ..
-	cp -Rv piratenluci/files 8.09||exit
+	cp -Rv ../piratenluci/files .||exit
 	echo Based on svn revision: `./scripts/getver.sh`>> files/etc/banner||exit
 	echo Built $timestamp on `hostname`>> files/etc/banner||exit
+	cd ..
 	config_arch=`( . 8.09/.config; echo $CONFIG_ARCH;)`
 	echo src/gz freifunk http://firmware.piratenfreifunk.de/piratenfreifunk/$timestamp/$arch/packages/$config_arch>>8.09/files/etc/opkg.conf
 # update host
