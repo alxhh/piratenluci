@@ -34,7 +34,8 @@ do
 	echo Built $timestamp on `hostname`>> files/etc/banner||exit
 	cd ..
 	config_arch=`( . 8.09/.config; echo $CONFIG_ARCH;)`
-	echo src/gz freifunk http://firmware.piratenfreifunk.de/piratenfreifunk/$timestamp/$arch/packages/$config_arch>>8.09/files/etc/opkg.conf
+	echo src/gz freifunk http://firmware.piratenfreifunk.de/piratenfreifunk/$timestamp/$arch/packages/$config_arch>>8.09/files/etc/opkg.conf||exit
+	echo src/gz packages http://downloads.openwrt.org/kamikaze/8.09/$arch/packages>>8.09/files/etc/opkg.conf||exit
 # update host
 	mkdir 8.09/files/etc/uci-defaults||exit
 	echo uci set freifunk.upgrade.repository=http://firmware.piratenfreifunk.de/piratenfreifunk/latest>8.09/files/etc/uci-defaults/piratenupdate
