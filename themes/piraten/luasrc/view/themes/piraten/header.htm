@@ -38,10 +38,146 @@ for i,r in ipairs(request) do
 	end
 end
 
+--count changes:
+
+local ucic =0;
+
+if tree.nodes[category] and tree.nodes[category].ucidata then
+	for i, j in pairs(require("luci.model.uci").cursor():changes()) do
+		for k, l in pairs(j) do
+			for m, n in pairs(l) do
+				ucic = ucic + 1;
+			end
+		end
+	end
+end 
+
+
 require("luci.i18n").loadc("default")
 require("luci.http").prepare_content("text/html")
 
 -%>
+
+
+<%-
+local function countsubs(node)
+	local count=0
+	for k, n in pairs(node.nodes) do
+		if n.title and n.target then
+			count = count + 1
+		end
+	end
+	return(count)
+end
+
+local function iphone_button(content, class, script)
+%>	
+<!-- Begin iphone button -->
+<span class="low_res_only iphone_button <%=class%>" onclick="<%=script%>">
+	<table>
+		<tr class="upper_corners">
+			<td class="l"></td>
+			<td class="c"></td>
+			<td class="r"></td>
+		</tr>
+		<tr class="no_corner">
+			<td></td>
+			<td class="iphone_button_content"><%=content%></td>
+			<td></td>				
+		</tr>
+		<tr class="lower_corners">
+			<td class="l"></td>
+			<td class="c"></td>
+			<td class="r"></td>
+		</tr>
+	</table>
+</span>
+<!-- End iphone button -->
+<%
+end	
+
+
+
+
+local function iphone_menu(prefix, node, id)
+	if not node.nodes or node.hidden then
+		return false
+	end
+	local index = {}
+	local count = 0
+	for k, n in pairs(node.nodes) do
+		if n.title and n.target then
+			table.insert(index, {name=k, order=n.order or 100})
+			count = count + 1
+		end
+	end
+
+	table.sort(index, function(a, b) return a.order < b.order end)
+
+	if count > 0 then 
+-%>
+<%- 		
+		local subs
+		local counter = 0
+		local next_id
+		local aclass = ""
+		local ahref = ""
+		for j, v in pairs(index) do
+			if not v.hidden and #v.name > 0 then
+				local nnode = node.nodes[v.name]
+				local href = controller .. prefix .. v.name
+				href = (nnode.query) and href .. luci.http.build_querystring(nnode.query) or href
+				subs = countsubs(nnode)
+				counter = counter + 1
+				next_id = id.."_"..counter				
+				ahref=luci.util.pcdata(href)
+				if nnode._menu_selected then	
+					aclass = "active"
+				else
+					aclass = ""
+				end
+%>
+
+	<tr class="level<%=id%>">
+		<td class="menu_item">
+<% 
+				iphone_button('<a class="' .. aclass .. '" href="' .. ahref .. '">' .. nnode.title .. '</a>', "", "top.location.href='" .. ahref .. "'")
+%>
+		</td>
+		<td class="submenu_marker">
+<%
+		
+				if subs > 0 then
+					iphone_button("&rang;", "", "show_menu_items('level"..next_id.."')") 				
+				end
+%>
+		</td>
+	</tr>
+<%
+				iphone_menu(prefix .. v.name .. "/", nnode, next_id) 
+%>
+
+<%- 
+			end 
+		end 
+	end
+end
+-%>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -49,15 +185,47 @@ require("luci.http").prepare_content("text/html")
 <head>
 	<link rel="stylesheet" type="text/css" href="<%=media%>/cascade.css" />
 	<link rel="stylesheet"  media="only screen and (max-device-width: 480px)" href="<%=media%>/iphone.css" type="text/css" /> 
-	<link rel="stylesheet"  media="handheld" href="<%=media%>/iphone.css" type="text/css" /> 
+	<link rel="stylesheet"  media="all" href="<%=media%>/iphone.css" type="text/css" /> 
 	<% if node and node.css then %><link rel="stylesheet" type="text/css" href="<%=resource%>/<%=node.css%>" /><% end %>
 	<link rel="shortcut icon" href="<%=media%>/images/logo32x32.png" />
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
 	<meta http-equiv="content-script-type" content="text/javascript" />
 	<title><%=striptags( hostname .. ( (node and node.title) and ' - ' .. node.title or '')) %> - LuCI</title>
+	<script type="text/javascript"> 
+		if (top != self) 
+  			top.location = self.location;		
+
+		function show_menu_items(item){	
+			var mid = document.getElementById('iphone_menu_items');
+			var nodes = mid.getElementsByTagName('tr');		
+			var needle = /^level/;
+			var joker= document.getElementById('iphone_menu_joker');
+			var check_level = item.lastIndexOf('_')
+			var back = item.slice(0, check_level);
+			
+			if(check_level != -1){
+				joker.style.display = 'inline';
+				joker.href = 'javascript:show_menu_items(\''+back+'\');';		
+			}else{
+				joker.style.display = 'none';
+			}
+			
+			for (var i = 0; i < nodes.length; ++i) {
+				if (nodes[i].className!=item && needle.test(nodes[i].className)){
+					nodes[i].style.display='none';
+				} else {
+					if (needle.test(nodes[i].className)) {
+						nodes[i].style.display='';
+					}
+				}
+			}
+		}
+	</script>
+
 </head>
 
 <body>
+
 
 <!-- Begin background layers -->
 <div id="main_bg_pattern">
@@ -93,11 +261,131 @@ for k,v in pairs(request) do
 		end
 	end
 end
-%>
+
+-%>
 	</div>
 	<!-- End header -->
+<%
+if cattree and cattree.nodes then
+%>
+	<!-- Begin iPhone menu -->
+	<div id="iphone_menu" class="low_res_only">
+		<!-- Begin iPhone menu handles -->
+		<div id="iphone_menu_handles">
+			<span  	id="iphone_menu_open">	
+<%-
+local menu_symbol = "&hellip;"
+if ucic > 0 then
+	menu_symbol = '<a class="warning">!</a>'
+end
+
+iphone_button(menu_symbol, "", "\
+	document.getElementById('iphone_menu').style.width='960px';\
+	document.getElementById('iphone_menu').style.height='100%';\
+	document.getElementById('iphone_menu').style.background='transparent url("..media.."/images/black_60.png)';\
+	document.getElementById('iphone_menu_close').style.display='inline';\
+	document.getElementById('iphone_menu_open').style.display='none';\
+	document.getElementById('iphone_menu_items').style.display='block';\
+	show_menu_items('level0');\
+	document.getElementById('iphone_menu_joker').style.display='none';\
+")
+-%>
+			</span>
+			<span 	id="iphone_menu_close"> 
+<%-
+
+iphone_button("&times;", "", "\
+	document.getElementById('iphone_menu').style.width='auto';\
+	document.getElementById('iphone_menu').style.height='auto';\
+	document.getElementById('iphone_menu').style.background='transparent none';\
+	document.getElementById('iphone_menu_close').style.display='none';\
+	document.getElementById('iphone_menu_open').style.display='inline';\
+	document.getElementById('iphone_menu_items').style.display='none';\
+	document.getElementById('iphone_menu_joker').style.display='none';\
+")
+-%>
+			</span>
+			<a id="iphone_menu_joker"> 				
+<%
+back = translate("back", "zurück")
+iphone_button("&lang;&nbsp;"..back,"","")
+%>
+			</a>
+
+		</div>			
+		<!-- End iPhone menu handles -->
+
+		<!-- Begin iPhone menu items -->
+		<div id="iphone_menu_items">
+			<table>		
+				<!-- Begin changes -->
+<%
+if ucic > 0 then 
+%>					
+				<tr class="level0" onload="document.getElementById('')">			
+					<td class="menu_item">
+<%
+	local usc = translate("unsavedchanges");
+	iphone_button('<a class="warning" href="'..controller..'/'..category..'/uci/changes">'..usc..':'..ucic..'</a>')							
+%>
+					</td>
+					<td class="submenu_marker">
+<%
+	iphone_button('<a class="warning">&rang</a>',"", "show_menu_items('level0_c')")
+%>
+					</td>
+				</tr>
+<%- 
+	iphone_menu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], "0_c")	
+end
+
+%>
+				<!-- End changes -->
+				<!-- Begin mode menu -->
+				<tr class="level0">
+					<td class="menu_item">
+<%
+	local mode = translate('mode', 'Modus');
+	iphone_button('<a>'..mode..'</a>', "", "show_menu_items('level0_m')")
+%>
+					</td>
+					<td class="submenu_marker">
+<%
+	iphone_button("&rang;", "", "show_menu_items('level0_m')") 	
+%>
+					</td>
+				</tr>
+				<!-- End mode menu -->
+				<!-- Begin basic menu items -->
+<%-
+	for k,node in pairs(tree.nodes) do
+		if node.title and not node.hidden then 
+%>
+				<tr class="level0_m">
+					<td class="menu_item <% if request[1] == k then %> active<%end%>">
+<%
+						iphone_button('<a href="'..controller..'/'..k..'">'..node.title..'</a>', "", "top.location.href='"..controller.."/"..k.."'")						
+%>
+					</td>
+					<td class="submenu_marker">
+					</td>
+				</tr>
+<%-		end
+	end
+
+	iphone_menu("/"..category.."/", cattree, 0) 
+%>
+				<!-- End basic menu items -->
+			</table>
+		</div>
+		<!--End iPhone menu items -->
+	</div>
+	<!-- End iPhone menu -->
+<%
+end
+%>
 	<!-- Begin menu bar -->
-	<div id="menubar">
+	<div id="menubar" class="high_res_only">
 		<!-- Begin main menu -->
 		<div id="mainmenu">
 <%-
@@ -109,15 +397,7 @@ local function showleft(d)
 	end
 end
 
-local function countsubs(node)
-	local count=0
-	for k, n in pairs(node.nodes) do
-		if n.title and n.target then
-			count = count + 1
-		end
-	end
-	return(count)
-end
+
 		
 local function submenu(prefix, node, depth)
 	if not node.nodes or node.hidden then
@@ -136,7 +416,7 @@ local function submenu(prefix, node, depth)
 
 	if count > 0 then 
 -%>
-<ul class="<%=showleft(depth)%>">
+<ul	class="<%=showleft(depth)%>">
 <%- 		
 		if depth > 0 then 
 %>	
@@ -153,25 +433,28 @@ local function submenu(prefix, node, depth)
 	<!-- End upper round corners -->
 <%- 		
 		end 
-		
+		local subs
 		for j, v in pairs(index) do
 			if not v.hidden and #v.name > 0 then
 				local nnode = node.nodes[v.name]
 				local href = controller .. prefix .. v.name
 				href = (nnode.query) and href .. luci.http.build_querystring(nnode.query) or href
+				subs = countsubs(nnode)
 %>
 
 	<li 	class="<%=showleft(depth+1)%>">
 		<a  	class="	<% if nnode._menu_selected then %>active <%end%> 
-			 	<% if countsubs(nnode) > 0 then %>hasSub <%end%>
+			 	<% if  subs > 0 then %>hasSub <%end%>
 			"	
 			href="<%=luci.util.pcdata(href)%>"
 		>
 						<%=nnode.title%>
 		</a>
-<%- 
-				
-		submenu(prefix .. v.name .. "/", nnode, depth+1) 
+<%- 		
+				if subs > 0 then
+					iphone_button("&rang;", "", "this.parentNode.getElementsByTagName('ul')[0].style.display='block';") 				
+				end
+				submenu(prefix .. v.name .. "/", nnode, depth+1) 
 %>
 	</li>
 <%- 
@@ -194,6 +477,8 @@ local function submenu(prefix, node, depth)
 	end
 end
 
+
+
 if cattree and cattree.nodes then
 	local index = {}
 	for k, node in pairs(cattree.nodes) do
@@ -207,17 +492,19 @@ if cattree and cattree.nodes then
 		if not node.hidden and node.title and node.target then
 			local href = controller.."/"..category.."/"..k.name
 			href = (k.query) and href .. luci.http.build_querystring(k.query) or href 
+	
 %>		
 			<div 	class="	<% if node._menu_selected then %> preactive<%end-%>
-					<% if countsubs(cattree)>6 then %> tiny <%end-%>
-				"
+						<% if countsubs(cattree)>6 then %> tiny <%end-%>
+					"
 			>
 				<a href="<%=href%>"><%=node.title%></a>
-<%-
+<%
 				submenu("/" .. category .. "/" .. k.name .. "/", node, 0)
 %>
 			</div>
-<%-		end
+<%-		
+		end
 	end
 end
 %>
@@ -276,37 +563,23 @@ end
 						<td class="main">
 							<!-- begin sidebar content -->
 							<div id="sidebar">				
-<%-
-if tree.nodes[category] and tree.nodes[category].ucidata then
-	local ucic = 0
-	for i, j in pairs(require("luci.model.uci").cursor():changes()) do
-		for k, l in pairs(j) do
-			for m, n in pairs(l) do
-				ucic = ucic + 1;
-			end
-		end
-	end
-%>
 								<div class="changes">				
 <%
-	if ucic > 0 then 
+if ucic > 0 then 
 %>					
 			
 									<a class="warning" href="<%=controller%>/<%=category%>/uci/changes"><%:unsavedchanges%>: <%=ucic%></a>							
 <%- 
-		submenu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], 1)
-	else 
+	submenu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], 1)
+else 
 %>
 									<a class="no_changes" href="#"><%:changes%>: 0</a>
 <%- 
-	end 
+end 
 %>
 								</div>
 								<div class="hsep">
 								</div>						
-<%- 
-end 
-%>
 								<!--- begin mode menu --->
 								<div class="modemenu">				
 									<ul>	

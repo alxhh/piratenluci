@@ -120,7 +120,7 @@ end
 share = f:field(Flag, "sharenet", "Eigenen Internetzugang freigeben")
 share.rmempty = true
 
-wansec = f:field(Flag, "wansec", "WAN-Zugriff auf Gateway beschränken")
+wansec = f:field(Flag, "wansec", "Mein Netzwerk vor Zugriff aus dem Freifunknetz schützen")
 wansec.rmempty = false
 wansec:depends("sharenet", "1")
 function wansec.cfgvalue(self, section)
