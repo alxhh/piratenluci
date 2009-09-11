@@ -76,16 +76,20 @@
 			color:#ffffff;
 			vertical-align:middle;
 			padding-left:100px;	
-			height:110px;
+			height:111px;
 			padding-top:26px;
 		}
-	
-		#menubar {  /*make that an id?*/
+		#iphone_menu_open,
+		#iphone_menu_close{
+			display:none;
+		}
+
+		#menubar {
 			background: transparent;
 			color: #ffffff;
 			margin-left:284px; /* so that the menu bar does not overlap the logo */		
 			vertical-align:middle;
-			height:25px;
+			height:24px;
 			font-size:16px;	
 		}
 		#content_table {
@@ -210,6 +214,9 @@
 					   corners on the top and on the bottom of each submenu. The first 
 					   level dropdown menus get those only at the bottom. 
 					*/ 
+					.no_corner{
+						background: transparent url(images/black_60.png);
+					}
 					.upper_corners {
 						margin-top:-5px;
 						height:5px;
