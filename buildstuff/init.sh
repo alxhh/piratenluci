@@ -10,11 +10,14 @@ mkdir dl
 timestamp=`date "+%F_%H-%M"`
 echo $timestamp >timestamp
 date +"%Y/%m/%d %H:%M">VERSION.txt||exit
-repoluci=~/dev/openwrt/piratenluci/
+repo_luci=~/dev/openwrt/piratenluci/
+repo_packages=~/dev/openwrt/repos/packages/
+repo_809=~/dev/openwrt/repos/8.09/
 #get basic repos
-git clone git://nbd.name/packages.git||exit
+git clone $repo_packages||exit
+#git clone git://nbd.name/packages.git||exit
 #git clone git://github.com/alxhh/piratenluci.git||exit
-git clone $repoluci||exit
+git clone $repo_luci||exit
 
 mkdir $timestamp
 for arch in $archs;
@@ -22,7 +25,8 @@ do
 	echo ----------------------------------------------------------------------------------------------
 	echo doing ARCH $arch
 	echo ----------------------------------------------------------------------------------------------
-	git clone git://nbd.name/8.09.git||exit
+	git clone $repo_809||exit
+	#git clone git://nbd.name/8.09.git||exit
 	ln -s ../../dl 8.09/dl||exit
 	echo src-link luci $PWD/piratenluci>8.09/feeds.conf||exit
 	echo src-link packages $PWD/packages>>8.09/feeds.conf
