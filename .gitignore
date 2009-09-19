@@ -9,3 +9,4 @@ build/po2lmo
 libs/lmo/src/lookup
 libs/lmo/src/po2lmo
 .pc
+git-daemon-export-ok
