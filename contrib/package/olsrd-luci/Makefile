@@ -11,7 +11,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_BASENAME:=olsrd
 PKG_NAME:=$(PKG_BASENAME)-luci
-PKG_BASEVER:=0.5.6-r5
+PKG_BASEVER:=0.5.6-r6
 PKG_RELEASE:=1
 
 #PKG_HGREV:=5ed3e2c2760c
@@ -24,7 +24,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_BASENAME)-$(PKG_BASEVER).tar.bz2
 PKG_SOURCE_URL:=http://www.olsr.org/releases/0.5
-PKG_MD5SUM:=57a365750457e13e2e1a5c7963b1d344
+PKG_MD5SUM:=07362792da718bed8943c2d7d1b4acfe
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_BASEVER)
 PKG_UNPACK=$(HOST_TAR) -C $(PKG_BUILD_DIR) --strip-components=1 -xjf $(DL_DIR)/$(PKG_SOURCE)
 PKG_VERSION:=$(PKG_BASEVER)+luci1
@@ -117,11 +117,11 @@ define Package/olsrd-luci-mod-watchdog
 	DEPENDS:=olsrd-luci
 endef
 
-define Package/olsrd-luci-mod-mdns
-	$(call Package/olsrd-luci/common_info)
-	TITLE:=OLSR - mDNS Plugin
-	DEPENDS:=olsrd-luci
-endef
+#define Package/olsrd-luci-mod-mdns
+#	$(call Package/olsrd-luci/common_info)
+#	TITLE:=OLSR - mDNS Plugin
+#	DEPENDS:=olsrd-luci
+#endef
 
 TARGET_CFLAGS += $(FPIC)
 
@@ -138,7 +138,8 @@ define Build/Compile
 		MANDIR="$(PKG_INSTALL_DIR)/usr/share/man" \
 		STRIP="true" \
 		INSTALL_LIB="true" \
-		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog mdns"
+		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog"
+#		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog mdns"
 endef
 
 define Package/olsrd-luci/install
@@ -205,10 +206,10 @@ define Package/olsrd-luci-mod-watchdog/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/lib/watchdog/olsrd_watchdog.so.* $(1)/usr/lib/
 endef
 
-define Package/olsrd-luci-mod-mdns/install
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/lib/mdns/olsrd_mdns.so.* $(1)/usr/lib/
-endef
+#define Package/olsrd-luci-mod-mdns/install
+#	$(INSTALL_DIR) $(1)/usr/lib
+#	$(INSTALL_BIN) $(PKG_BUILD_DIR)/lib/mdns/olsrd_mdns.so.* $(1)/usr/lib/
+#endef
 
 
 $(eval $(call BuildPackage,olsrd-luci))
@@ -223,4 +224,4 @@ $(eval $(call BuildPackage,olsrd-luci-mod-secure))
 $(eval $(call BuildPackage,olsrd-luci-mod-txtinfo))
 $(eval $(call BuildPackage,olsrd-luci-mod-quagga))
 $(eval $(call BuildPackage,olsrd-luci-mod-watchdog))
-$(eval $(call BuildPackage,olsrd-luci-mod-mdns))
+#$(eval $(call BuildPackage,olsrd-luci-mod-mdns))
