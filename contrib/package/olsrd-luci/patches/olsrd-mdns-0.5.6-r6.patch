@@ -1,0 +1,2139 @@
+diff -r aac621d9803e -r 2226e0b6c6bc Makefile
+--- a/Makefile	Mon Sep 01 22:01:42 2008 +0200
++++ b/Makefile	Tue Oct 13 17:55:14 2009 +0200
+@@ -154,7 +154,7 @@
+ # nameservice: no regex
+ SUBDIRS := bmf dot_draw dyn_gw_plain httpinfo mini quagga secure tas txtinfo watchdog
+ else
+-SUBDIRS := bmf dot_draw dyn_gw dyn_gw_plain httpinfo mini nameservice pgraph secure txtinfo watchdog
++SUBDIRS := bmf dot_draw dyn_gw dyn_gw_plain httpinfo mini mdns nameservice pgraph secure txtinfo watchdog
+ endif
+ endif
+ endif
+@@ -226,6 +226,10 @@
+		$(MAKECMD) -C lib/quagga 
+		$(MAKECMD) -C lib/quagga DESTDIR=$(DESTDIR) install 
+
++mdns:
++		$(MAKECMD) -C lib/mdns clean
++		$(MAKECMD) -C lib/mdns 
++		$(MAKECMD) -C lib/mdns DESTDIR=$(DESTDIR) install 
+ txtinfo:
+		$(MAKECMD) -C lib/txtinfo clean
+		$(MAKECMD) -C lib/txtinfo 
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/Makefile
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/Makefile	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,33 @@
++
++OLSRD_PLUGIN =	true
++PLUGIN_NAME =	olsrd_mdns
++PLUGIN_VER =	1.0.0
++
++TOPDIR = ../..
++include $(TOPDIR)/Makefile.inc
++
++LIBS +=	$(OS_LIB_PTHREAD)
++
++# Must be specified along with -lpthread on linux
++CPPFLAGS += $(OS_CFLAG_PTHREAD)
++
++ifneq ($(OS),linux)
++
++default_target install clean:
++	@echo "*** mdns Plugin only supported on Linux, sorry!"
++
++else
++
++default_target: $(PLUGIN_FULLNAME)
++
++$(PLUGIN_FULLNAME): $(OBJS) version-script.txt
++		$(CC) $(LDFLAGS) -o $(PLUGIN_FULLNAME) $(OBJS) $(LIBS)
++
++install:	$(PLUGIN_FULLNAME)
++		$(STRIP) $(PLUGIN_FULLNAME)
++		$(INSTALL_LIB)
++
++clean:
++		rm -f $(OBJS) $(SRCS:%.c=%.d) $(PLUGIN_FULLNAME)
++
++endif
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/README
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/README	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,67 @@
++= OLSR mdns plugin =
++
++This README file is the main documentation source for the OLSR mdns plugin
++
++Last update 24/03/2009
++
++== Description ==
++
++This plugin goal is the distribution of multicast DNS messages over an OLSR Wireless Mesh Network.
++
++In a wireless mesh network, the usage of wireless interfaces in ad-hoc mode and the OLSR routing protocol prevent
++multicast messages to be distributed all over the network. 
++
++We are especially interested in the distribution of Multicast DNS (mDNS) messages, used for host-based service discovery, 
++over the networks that do not directly partecipate in the OLSR mesh cloud.
++
++This task is achieved in the following way: 
++ 1. the local router picks up from the local non-OLSR (HNA) network mDNS messages and encapsulates them in a new type of OLSR messages, 
++ 2. the OLSR infrastructure is exploited for the transport of these messages,
++ 3. remote routers decapsulate mDNS messages from received OLSR messages and send them over their attached non-OLSR networks.
++
++The work could have its practical and immediate application in all the wireless network communities that employ the OLSR protocol.
++
++The plugin captures the traffic (only IPv4 if OLSR is running IPv4 and only IPv6 if OLSR is running IPv6)
++and encapsulates this traffic in OLSR messages that are forwarded to all the other nodes in the mesh.
++
++Other nodes running the plugin will decapsulate the packets and will send them to the interfaces specified in the configuration file
++
++Let's get this example topology
++
++pc1->eth0 ----- eth0<-r1->ath0 -------ath0<-r2->eth0 ---------eth0<-pc2
++
++r1 and r2 are OLSR routers with mdns plugin enabled. pc1 will be able to receive mdns traffic generated at pc2 and vice versa
++
++The most interesting feature is that messages are forwarded also by OLSR routers without the plugin. For example:
++
++pc1->eth0 ----- eth0<-r1->ath0 ---r3----ath0<-r2->eth0 ---------eth0<-pc2
++
++also in this topology mdns traffic between pc1 and pc2 is possible because r3 forwards mdns plugin OLSR packets even if it is not aware of the new application.
++
++== Configuration ==
++
++To enable the Plugin use the following syntax
++
++LoadPlugin "olsrd_mdns.so.1.0.0"
++{
++PlParam     "NonOlsrIf"  "eth0"
++PlParam     "NonOlsrIf"  "eth1"
++PlParam     "MDNS_TTL"  "5"
++}
++
++Where eth0 and eth1 are the names of the interfaces where you want to capture traffic (and decapsulate incoming traffic).
++
++Note that this interfaces must not talk OLSR and also the subnets on this interfaces must be announced with an appropriate HNA entry.
++This version of the plugin will not chech this stuff to be properly configured!
++
++MDNS_TTL is the time to live given to the MDNS OLSR messages. It makes no sense to announce your services to hosts that are too many hops away, because they will experience a very bad unicast connection.
++With this TTL setting we can tune how far we announce our services and we make the protocol scale much better
++
++=== References ===
++
++ * Multicast DNS: [http://tools.ietf.org/html/draft-cheshire-dnsext-multicastdns-07 IETF draft-cheshire-dnsext-multicastdns-07]
++ * OLSR Optimized Link State Routing: [http://tools.ietf.org/html/rfc3626 IETF RFC 3626]
++
++=== Contact ===
++ * Saverio Proto proto@ing.uniroma2.it
++ * Claudio Pisa claudio.pisa@clauz.net
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/Address.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/Address.c	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,78 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++
++#include "Address.h"
++
++/* System includes */
++#include <stddef.h>             /* NULL */
++#include <string.h>             /* strcmp */
++#include <assert.h>             /* assert() */
++#include <netinet/ip.h>         /* struct ip */
++#include <netinet/udp.h>        /* struct udphdr */
++
++/* OLSRD includes */
++#include "defs.h"               /* ipequal */
++#include "olsr_protocol.h"      /* OLSRPORT */
++
++/* Plugin includes */
++#include "mdns.h"               /* BMF_ENCAP_PORT */
++#include "NetworkInterfaces.h"  /* TBmfInterface */
++
++/* Whether or not to flood local broadcast packets (e.g. packets with IP
++ * destination 192.168.1.255). May be overruled by setting the plugin
++ * parameter "DoLocalBroadcast" to "no" */
++//int EnableLocalBroadcast = 1;
++
++/* -------------------------------------------------------------------------
++ * Function   : IsMulticast
++ * Description: Check if an IP address is a multicast address
++ * Input      : ipAddress
++ * Output     : none
++ * Return     : true (1) or false (0)
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++int
++IsMulticast(union olsr_ip_addr *ipAddress)
++{
++  assert(ipAddress != NULL);
++
++  return (ntohl(ipAddress->v4.s_addr) & 0xF0000000) == 0xE0000000;
++}
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/Address.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/Address.h	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,53 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++
++#ifndef _MDNS_ADDRESS_H
++#define _MDNS_ADDRESS_H
++
++#include "olsr_types.h"         /* olsr_ip_addr */
++#include "olsrd_plugin.h"             /* union set_plugin_parameter_addon */
++#include "interfaces.h"         /* struct interface */
++
++struct TBmfInterface;
++
++int IsMulticast(union olsr_ip_addr *ipAddress);
++
++#endif /* _MDNS_ADDRESS_H */
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/NetworkInterfaces.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/NetworkInterfaces.c	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,570 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++
++#include "NetworkInterfaces.h"
++
++/* System includes */
++#include <stddef.h>             /* NULL */
++#include <syslog.h>             /* syslog() */
++#include <string.h>             /* strerror(), strchr(), strcmp() */
++#include <errno.h>              /* errno */
++#include <unistd.h>             /* close() */
++#include <sys/ioctl.h>          /* ioctl() */
++#include <fcntl.h>              /* fcntl() */
++#include <assert.h>             /* assert() */
++#include <net/if.h>             /* socket(), ifreq, if_indextoname(), if_nametoindex() */
++#include <netinet/in.h>         /* htons() */
++#include <linux/if_ether.h>     /* ETH_P_IP */
++#include <linux/if_packet.h>    /* packet_mreq, PACKET_MR_PROMISC, PACKET_ADD_MEMBERSHIP */
++#include <linux/if_tun.h>       /* IFF_TAP */
++#include <netinet/ip.h>         /* struct ip */
++#include <netinet/udp.h>        /* SOL_UDP */
++#include <stdlib.h>             /* atoi, malloc */
++
++/* OLSRD includes */
++#include "olsr.h"               /* OLSR_PRINTF() */
++#include "ipcalc.h"
++#include "defs.h"               /* olsr_cnf */
++#include "link_set.h"           /* get_link_set() */
++#include "tc_set.h"             /* olsr_lookup_tc_entry(), olsr_lookup_tc_edge() */
++#include "net_olsr.h"           /* ipequal */
++#include "lq_plugin.h"
++//#include "olsr_ip_prefix_list.h"
++
++/* Plugin includes */
++#include "Packet.h"             /* IFHWADDRLEN */
++#include "mdns.h"               /* PLUGIN_NAME, MainAddressOf() */
++#include "Address.h"            /* IsMulticast() */
++
++int my_MDNS_TTL = 0;
++
++/* List of network interface objects used by BMF plugin */
++struct TBmfInterface *BmfInterfaces = NULL;
++struct TBmfInterface *LastBmfInterface = NULL;
++
++/* Highest-numbered open socket file descriptor. To be used as first
++ * parameter in calls to select(...). */
++int HighestSkfd = -1;
++
++/* Set of socket file descriptors */
++fd_set InputSet;
++
++
++/* -------------------------------------------------------------------------
++ * Function   : CreateCaptureSocket
++ * Description: Create socket for promiscuously capturing multicast IP traffic
++ * Input      : ifname - network interface (e.g. "eth0")
++ * Output     : none
++ * Return     : the socket descriptor ( >= 0), or -1 if an error occurred
++ * Data Used  : none
++ * Notes      : The socket is a cooked IP packet socket, bound to the specified
++ *              network interface
++ * ------------------------------------------------------------------------- */
++static int
++CreateCaptureSocket(const char *ifName)
++{
++  int ifIndex = if_nametoindex(ifName);
++  struct packet_mreq mreq;
++  struct ifreq req;
++  struct sockaddr_ll bindTo;
++  int skfd = 0;
++  /* Open cooked IP packet socket */
++  if (olsr_cnf->ip_version == AF_INET) {
++    skfd = socket(PF_PACKET, SOCK_DGRAM, htons(ETH_P_IP));
++  } else {
++    skfd = socket(PF_PACKET, SOCK_DGRAM, htons(ETH_P_IPV6));
++  }
++  if (skfd < 0) {
++    BmfPError("socket(PF_PACKET) error");
++    return -1;
++  }
++
++  /* Set interface to promiscuous mode */
++  memset(&mreq, 0, sizeof(struct packet_mreq));
++  mreq.mr_ifindex = ifIndex;
++  mreq.mr_type = PACKET_MR_PROMISC;
++  if (setsockopt(skfd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
++    BmfPError("setsockopt(PACKET_MR_PROMISC) error");
++    close(skfd);
++    return -1;
++  }
++
++  /* Get hardware (MAC) address */
++  memset(&req, 0, sizeof(struct ifreq));
++  strncpy(req.ifr_name, ifName, IFNAMSIZ - 1);
++  req.ifr_name[IFNAMSIZ - 1] = '\0';    /* Ensures null termination */
++  if (ioctl(skfd, SIOCGIFHWADDR, &req) < 0) {
++    BmfPError("error retrieving MAC address");
++    close(skfd);
++    return -1;
++  }
++
++  /* Bind the socket to the specified interface */
++  memset(&bindTo, 0, sizeof(bindTo));
++  bindTo.sll_family = AF_PACKET;
++  if (olsr_cnf->ip_version == AF_INET) {
++    bindTo.sll_protocol = htons(ETH_P_IP);
++  } else {
++    bindTo.sll_protocol = htons(ETH_P_IPV6);
++  }
++  bindTo.sll_ifindex = ifIndex;
++  memcpy(bindTo.sll_addr, req.ifr_hwaddr.sa_data, IFHWADDRLEN);
++  bindTo.sll_halen = IFHWADDRLEN;
++
++  if (bind(skfd, (struct sockaddr *)&bindTo, sizeof(bindTo)) < 0) {
++    BmfPError("bind() error");
++    close(skfd);
++    return -1;
++  }
++
++  /* Set socket to blocking operation */
++  if (fcntl(skfd, F_SETFL, fcntl(skfd, F_GETFL, 0) & ~O_NONBLOCK) < 0) {
++    BmfPError("fcntl() error");
++    close(skfd);
++    return -1;
++  }
++  //AddDescriptorToInputSet(skfd);
++  add_olsr_socket(skfd, &DoMDNS);
++
++  return skfd;
++}                               /* CreateCaptureSocket */
++
++/* -------------------------------------------------------------------------
++ * Function   : CreateInterface
++ * Description: Create a new TBmfInterface object and adds it to the global
++ *              BmfInterfaces list
++ * Input      : ifName - name of the network interface (e.g. "eth0")
++ *            : olsrIntf - OLSR interface object of the network interface, or
++ *                NULL if the network interface is not OLSR-enabled
++ * Output     : none
++ * Return     : the number of opened sockets
++ * Data Used  : BmfInterfaces, LastBmfInterface
++ * ------------------------------------------------------------------------- */
++
++//FOR MDNS IS ALWAYS CALLED WITH NULL AS SECOND ARG
++
++static int
++CreateInterface(const char *ifName, struct interface *olsrIntf)
++{
++  int capturingSkfd = -1;
++  int encapsulatingSkfd = -1;
++  int listeningSkfd = -1;
++  int ioctlSkfd;
++  struct ifreq ifr;
++  int nOpened = 0;
++  struct TBmfInterface *newIf = malloc(sizeof(struct TBmfInterface));
++
++  assert(ifName != NULL);
++
++  if (newIf == NULL) {
++    return 0;
++  }
++//TODO: assert interface is not talking OLSR
++
++
++  /* Create socket for capturing and sending of multicast packets on
++   * non-OLSR interfaces, and on OLSR-interfaces if configured. */
++  if ((olsrIntf == NULL)) {
++    capturingSkfd = CreateCaptureSocket(ifName);
++    if (capturingSkfd < 0) {
++      close(encapsulatingSkfd);
++      free(newIf);
++      return 0;
++    }
++
++    nOpened++;
++  }
++
++  /* For ioctl operations on the network interface, use either capturingSkfd
++   * or encapsulatingSkfd, whichever is available */
++  ioctlSkfd = (capturingSkfd >= 0) ? capturingSkfd : encapsulatingSkfd;
++
++  /* Retrieve the MAC address of the interface. */
++  memset(&ifr, 0, sizeof(struct ifreq));
++  strncpy(ifr.ifr_name, ifName, IFNAMSIZ - 1);
++  ifr.ifr_name[IFNAMSIZ - 1] = '\0';    /* Ensures null termination */
++  if (ioctl(ioctlSkfd, SIOCGIFHWADDR, &ifr) < 0) {
++    BmfPError("ioctl(SIOCGIFHWADDR) error for interface \"%s\"", ifName);
++    close(capturingSkfd);
++    close(encapsulatingSkfd);
++    free(newIf);
++    return 0;
++  }
++
++  /* Copy data into TBmfInterface object */
++  newIf->capturingSkfd = capturingSkfd;
++  newIf->encapsulatingSkfd = encapsulatingSkfd;
++  newIf->listeningSkfd = listeningSkfd;
++  memcpy(newIf->macAddr, ifr.ifr_hwaddr.sa_data, IFHWADDRLEN);
++  memcpy(newIf->ifName, ifName, IFNAMSIZ);
++  newIf->olsrIntf = olsrIntf;
++  if (olsrIntf != NULL) {
++    /* For an OLSR-interface, copy the interface address and broadcast
++     * address from the OLSR interface object. Downcast to correct sockaddr
++     * subtype. */
++    newIf->intAddr.v4 = olsrIntf->int_addr.sin_addr;
++    newIf->broadAddr.v4 = olsrIntf->int_broadaddr.sin_addr;
++  } else {
++    /* For a non-OLSR interface, retrieve the IP address ourselves */
++    memset(&ifr, 0, sizeof(struct ifreq));
++    strncpy(ifr.ifr_name, ifName, IFNAMSIZ - 1);
++    ifr.ifr_name[IFNAMSIZ - 1] = '\0';  /* Ensures null termination */
++    if (ioctl(ioctlSkfd, SIOCGIFADDR, &ifr) < 0) {
++      BmfPError("ioctl(SIOCGIFADDR) error for interface \"%s\"", ifName);
++
++      newIf->intAddr.v4.s_addr = inet_addr("0.0.0.0");
++    } else {
++      /* Downcast to correct sockaddr subtype */
++      newIf->intAddr.v4 = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr;
++    }
++
++    /* For a non-OLSR interface, retrieve the IP broadcast address ourselves */
++    memset(&ifr, 0, sizeof(struct ifreq));
++    strncpy(ifr.ifr_name, ifName, IFNAMSIZ - 1);
++    ifr.ifr_name[IFNAMSIZ - 1] = '\0';  /* Ensures null termination */
++    if (ioctl(ioctlSkfd, SIOCGIFBRDADDR, &ifr) < 0) {
++      BmfPError("ioctl(SIOCGIFBRDADDR) error for interface \"%s\"", ifName);
++
++      newIf->broadAddr.v4.s_addr = inet_addr("0.0.0.0");
++    } else {
++      /* Downcast to correct sockaddr subtype */
++      newIf->broadAddr.v4 = ((struct sockaddr_in *)&ifr.ifr_broadaddr)->sin_addr;
++    }
++  }
++
++  /* Initialize fragment history table */
++  //memset(&newIf->fragmentHistory, 0, sizeof(newIf->fragmentHistory));
++  //newIf->nextFragmentHistoryEntry = 0;
++
++  /* Reset counters */
++  //newIf->nBmfPacketsRx = 0;
++  //newIf->nBmfPacketsRxDup = 0;
++  //newIf->nBmfPacketsTx = 0;
++
++  /* Add new TBmfInterface object to global list. OLSR interfaces are
++   * added at the front of the list, non-OLSR interfaces at the back. */
++  if (BmfInterfaces == NULL) {
++    /* First TBmfInterface object in list */
++    BmfInterfaces = newIf;
++    LastBmfInterface = newIf;
++  } else if (olsrIntf != NULL) {
++    /* Add new TBmfInterface object at front of list */
++    newIf->next = BmfInterfaces;
++    BmfInterfaces = newIf;
++  } else {
++    /* Add new TBmfInterface object at back of list */
++    newIf->next = NULL;
++    LastBmfInterface->next = newIf;
++    LastBmfInterface = newIf;
++  }
++
++  //OLSR_PRINTF(
++  //  8,
++  //  "%s: opened %d socket%s on %s interface \"%s\"\n",
++  //  PLUGIN_NAME_SHORT,
++  //  nOpened,
++  //  nOpened == 1 ? "" : "s",
++  //  olsrIntf != NULL ? "OLSR" : "non-OLSR",
++  //  ifName);
++
++  return nOpened;
++}                               /* CreateInterface */
++
++/* -------------------------------------------------------------------------
++ * Function   : CreateBmfNetworkInterfaces
++ * Description: Create a list of TBmfInterface objects, one for each network
++ *              interface on which BMF runs
++ * Input      : skipThisIntf - network interface to skip, if seen
++ * Output     : none
++ * Return     : fail (-1) or success (0)
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++int
++CreateBmfNetworkInterfaces(struct interface *skipThisIntf)
++{
++  int skfd;
++  struct ifconf ifc;
++  int numreqs = 30;
++  struct ifreq *ifr;
++  int n;
++  int nOpenedSockets = 0;
++
++  /* Clear input descriptor set */
++  FD_ZERO(&InputSet);
++
++  skfd = socket(PF_INET, SOCK_DGRAM, 0);
++  if (skfd < 0) {
++    BmfPError("no inet socket available to retrieve interface list");
++    return -1;
++  }
++
++  /* Retrieve the network interface configuration list */
++  ifc.ifc_buf = NULL;
++  for (;;) {
++    ifc.ifc_len = sizeof(struct ifreq) * numreqs;
++    ifc.ifc_buf = realloc(ifc.ifc_buf, ifc.ifc_len);
++
++    if (ioctl(skfd, SIOCGIFCONF, &ifc) < 0) {
++      BmfPError("ioctl(SIOCGIFCONF) error");
++
++      close(skfd);
++      free(ifc.ifc_buf);
++      return -1;
++    }
++    if ((unsigned)ifc.ifc_len == sizeof(struct ifreq) * numreqs) {
++      /* Assume it overflowed; double the space and try again */
++      numreqs *= 2;
++      assert(numreqs < 1024);
++      continue;                 /* for (;;) */
++    }
++    break;                      /* for (;;) */
++  }                             /* for (;;) */
++
++  close(skfd);
++
++  /* For each item in the interface configuration list... */
++  ifr = ifc.ifc_req;
++  for (n = ifc.ifc_len / sizeof(struct ifreq); --n >= 0; ifr++) {
++    struct interface *olsrIntf;
++    union olsr_ip_addr ipAddr;
++
++    /* Skip the BMF network interface itself */
++    //if (strncmp(ifr->ifr_name, EtherTunTapIfName, IFNAMSIZ) == 0)
++    //{
++    //  continue; /* for (n = ...) */
++    //}
++
++    /* ...find the OLSR interface structure, if any */
++    ipAddr.v4 = ((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr;
++    olsrIntf = if_ifwithaddr(&ipAddr);
++
++    if (skipThisIntf != NULL && olsrIntf == skipThisIntf) {
++      continue;                 /* for (n = ...) */
++    }
++
++    if (olsrIntf == NULL && !IsNonOlsrBmfIf(ifr->ifr_name)) {
++      /* Interface is neither OLSR interface, nor specified as non-OLSR BMF
++       * interface in the BMF plugin parameter list */
++      continue;                 /* for (n = ...) */
++    }
++
++    if (!IsNonOlsrBmfIf(ifr->ifr_name)) {
++      //If the interface is not specified in the configuration file then go ahead
++      continue;                 /* for (n = ...) */
++    }
++    //TODO: asser if->ifr_name is not talking OLSR
++    //nOpenedSockets += CreateInterface(ifr->ifr_name, olsrIntf);
++    nOpenedSockets += CreateInterface(ifr->ifr_name, NULL);
++
++  }                             /* for (n = ...) */
++
++  free(ifc.ifc_buf);
++
++  if (BmfInterfaces == NULL) {
++    //OLSR_PRINTF(1, "%s: could not initialize any network interface\n", PLUGIN_NAME);
++  } else {
++    //OLSR_PRINTF(1, "%s: opened %d sockets\n", PLUGIN_NAME, nOpenedSockets);
++  }
++  return 0;
++}                               /* CreateBmfNetworkInterfaces */
++
++/* -------------------------------------------------------------------------
++ * Function   : AddInterface
++ * Description: Add an OLSR-enabled network interface to the list of BMF-enabled
++ *              network interfaces
++ * Input      : newIntf - network interface to add
++ * Output     : none
++ * Return     : none
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++void
++AddInterface(struct interface *newIntf)
++{
++  int nOpened;
++
++  assert(newIntf != NULL);
++
++  nOpened = CreateInterface(newIntf->int_name, newIntf);
++
++  //OLSR_PRINTF(1, "%s: opened %d sockets\n", PLUGIN_NAME, nOpened);
++}                               /* AddInterface */
++
++/* -------------------------------------------------------------------------
++ * Function   : CloseBmfNetworkInterfaces
++ * Description: Closes every socket on each network interface used by BMF
++ * Input      : none
++ * Output     : none
++ * Return     : none
++ * Data Used  : none
++ * Notes      : Closes
++ *              - the local EtherTunTap interface (e.g. "tun0" or "tap0")
++ *              - for each BMF-enabled interface, the socket used for
++ *                capturing multicast packets
++ *              - for each OLSR-enabled interface, the socket used for
++ *                encapsulating packets
++ *              Also restores the network state to the situation before BMF
++ *              was started.
++ * ------------------------------------------------------------------------- */
++void
++CloseBmfNetworkInterfaces(void)
++{
++  int nClosed = 0;
++  u_int32_t totalOlsrBmfPacketsRx = 0;
++  u_int32_t totalOlsrBmfPacketsRxDup = 0;
++  u_int32_t totalOlsrBmfPacketsTx = 0;
++  u_int32_t totalNonOlsrBmfPacketsRx = 0;
++  u_int32_t totalNonOlsrBmfPacketsRxDup = 0;
++  u_int32_t totalNonOlsrBmfPacketsTx = 0;
++
++  /* Close all opened sockets */
++  struct TBmfInterface *nextBmfIf = BmfInterfaces;
++  while (nextBmfIf != NULL) {
++    struct TBmfInterface *bmfIf = nextBmfIf;
++    nextBmfIf = bmfIf->next;
++
++    if (bmfIf->capturingSkfd >= 0) {
++      close(bmfIf->capturingSkfd);
++      nClosed++;
++    }
++    if (bmfIf->encapsulatingSkfd >= 0) {
++      close(bmfIf->encapsulatingSkfd);
++      nClosed++;
++    }
++    //OLSR_PRINTF(
++    //  7,
++    //  "%s: %s interface \"%s\": RX pkts %u (%u dups); TX pkts %u\n",
++    //  PLUGIN_NAME_SHORT,
++    //  bmfIf->olsrIntf != NULL ? "OLSR" : "non-OLSR",
++    //  bmfIf->ifName,
++    //  bmfIf->nBmfPacketsRx,
++    //  bmfIf->nBmfPacketsRxDup,
++    //  bmfIf->nBmfPacketsTx);
++
++    //OLSR_PRINTF(
++    //  1,
++    //  "%s: closed %s interface \"%s\"\n",
++    //  PLUGIN_NAME_SHORT,
++    //  bmfIf->olsrIntf != NULL ? "OLSR" : "non-OLSR",
++    //  bmfIf->ifName);
++
++    /* Add totals */
++    if (bmfIf->olsrIntf != NULL) {
++      totalOlsrBmfPacketsRx += bmfIf->nBmfPacketsRx;
++      totalOlsrBmfPacketsRxDup += bmfIf->nBmfPacketsRxDup;
++      totalOlsrBmfPacketsTx += bmfIf->nBmfPacketsTx;
++    } else {
++      totalNonOlsrBmfPacketsRx += bmfIf->nBmfPacketsRx;
++      totalNonOlsrBmfPacketsRxDup += bmfIf->nBmfPacketsRxDup;
++      totalNonOlsrBmfPacketsTx += bmfIf->nBmfPacketsTx;
++    }
++
++    free(bmfIf);
++  }                             /* while */
++
++  BmfInterfaces = NULL;
++
++  //OLSR_PRINTF(1, "%s: closed %d sockets\n", PLUGIN_NAME_SHORT, nClosed);
++
++}                               /* CloseBmfNetworkInterfaces */
++
++#define MAX_NON_OLSR_IFS 32
++static char NonOlsrIfNames[MAX_NON_OLSR_IFS][IFNAMSIZ];
++static int nNonOlsrIfs = 0;
++/* -------------------------------------------------------------------------
++ * Function   : AddNonOlsrBmfIf
++ * Description: Add an non-OLSR enabled network interface to the list of BMF-enabled
++ *              network interfaces
++ * Input      : ifName - network interface (e.g. "eth0")
++ *              data - not used
++ *              addon - not used
++ * Output     : none
++ * Return     : success (0) or fail (1)
++ * Data Used  : NonOlsrIfNames
++ * ------------------------------------------------------------------------- */
++int
++AddNonOlsrBmfIf(const char *ifName, void *data __attribute__ ((unused)), set_plugin_parameter_addon addon __attribute__ ((unused)))
++{
++  assert(ifName != NULL);
++
++  if (nNonOlsrIfs >= MAX_NON_OLSR_IFS) {
++    //OLSR_PRINTF(
++    //  1,
++    //  "%s: too many non-OLSR interfaces specified, maximum is %d\n",
++    //  PLUGIN_NAME,
++    //  MAX_NON_OLSR_IFS);
++    return 1;
++  }
++
++  strncpy(NonOlsrIfNames[nNonOlsrIfs], ifName, IFNAMSIZ - 1);
++  NonOlsrIfNames[nNonOlsrIfs][IFNAMSIZ - 1] = '\0';     /* Ensures null termination */
++  nNonOlsrIfs++;
++  return 0;
++}                               /* AddNonOlsrBmfIf */
++
++
++int
++set_MDNS_TTL(const char *MDNS_TTL, void *data __attribute__ ((unused)), set_plugin_parameter_addon addon __attribute__ ((unused)))
++{
++  assert(MDNS_TTL!= NULL);
++  my_MDNS_TTL = atoi(MDNS_TTL);
++  return 0;
++}                               /* set_MDNS_TTL */
++/* -------------------------------------------------------------------------
++ * Function   : IsNonOlsrBmfIf
++ * Description: Checks if a network interface is OLSR-enabled
++ * Input      : ifName - network interface (e.g. "eth0")
++ * Output     : none
++ * Return     : true (1) or false (0)
++ * Data Used  : NonOlsrIfNames
++ * ------------------------------------------------------------------------- */
++int
++IsNonOlsrBmfIf(const char *ifName)
++{
++  int i;
++
++  assert(ifName != NULL);
++
++  for (i = 0; i < nNonOlsrIfs; i++) {
++    if (strncmp(NonOlsrIfNames[i], ifName, IFNAMSIZ) == 0)
++      return 1;
++  }
++  return 0;
++}                               /* IsNonOlsrBmfIf */
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/NetworkInterfaces.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/NetworkInterfaces.h	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,161 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++
++#ifndef _BMF_NETWORKINTERFACES_H
++#define _BMF_NETWORKINTERFACES_H
++
++/* System includes */
++#include <netinet/in.h>         /* struct in_addr */
++
++/* OLSR includes */
++#include "olsr_types.h"         /* olsr_ip_addr */
++#include "olsrd_plugin.h"             /* union set_plugin_parameter_addon */
++
++/* Plugin includes */
++#include "Packet.h"             /* IFHWADDRLEN */
++#include "mdns.h"
++
++/* Size of buffer in which packets are received */
++#define BMF_BUFFER_SIZE 2048
++
++struct TBmfInterface {
++  /* File descriptor of raw packet socket, used for capturing multicast packets */
++  int capturingSkfd;
++
++  /* File descriptor of UDP (datagram) socket for encapsulated multicast packets.
++   * Only used for OLSR-enabled interfaces; set to -1 if interface is not OLSR-enabled. */
++  int encapsulatingSkfd;
++
++  /* File descriptor of UDP packet socket, used for listening to encapsulation packets.
++   * Used only when PlParam "BmfMechanism" is set to "UnicastPromiscuous". */
++  int listeningSkfd;
++
++  unsigned char macAddr[IFHWADDRLEN];
++
++  char ifName[IFNAMSIZ];
++
++  /* OLSRs idea of this network interface. NULL if this interface is not
++   * OLSR-enabled. */
++  struct interface *olsrIntf;
++
++  /* IP address of this network interface */
++  union olsr_ip_addr intAddr;
++
++  /* Broadcast address of this network interface */
++  union olsr_ip_addr broadAddr;
++
++#define FRAGMENT_HISTORY_SIZE 10
++  struct TFragmentHistory {
++    u_int16_t ipId;
++    u_int8_t ipProto;
++    struct in_addr ipSrc;
++    struct in_addr ipDst;
++  } fragmentHistory[FRAGMENT_HISTORY_SIZE];
++
++  int nextFragmentHistoryEntry;
++
++  /* Number of received and transmitted BMF packets on this interface */
++  u_int32_t nBmfPacketsRx;
++  u_int32_t nBmfPacketsRxDup;
++  u_int32_t nBmfPacketsTx;
++
++  /* Next element in list */
++  struct TBmfInterface *next;
++};
++
++extern struct TBmfInterface *BmfInterfaces;
++
++extern int my_MDNS_TTL;
++
++extern int HighestSkfd;
++extern fd_set InputSet;
++
++extern int EtherTunTapFd;
++
++extern char EtherTunTapIfName[];
++
++/* 10.255.255.253 in host byte order */
++#define ETHERTUNTAPDEFAULTIP 0x0AFFFFFD
++
++extern u_int32_t EtherTunTapIp;
++extern u_int32_t EtherTunTapIpMask;
++extern u_int32_t EtherTunTapIpBroadcast;
++
++
++enum TBmfMechanism { BM_BROADCAST = 0, BM_UNICAST_PROMISCUOUS };
++extern enum TBmfMechanism BmfMechanism;
++
++int SetBmfInterfaceName(const char *ifname, void *data, set_plugin_parameter_addon addon);
++int SetBmfInterfaceIp(const char *ip, void *data, set_plugin_parameter_addon addon);
++int SetCapturePacketsOnOlsrInterfaces(const char *enable, void *data, set_plugin_parameter_addon addon);
++int SetBmfMechanism(const char *mechanism, void *data, set_plugin_parameter_addon addon);
++int DeactivateSpoofFilter(void);
++void RestoreSpoofFilter(void);
++
++#define MAX_UNICAST_NEIGHBORS 10
++struct TBestNeighbors {
++  struct link_entry *links[MAX_UNICAST_NEIGHBORS];
++};
++
++void FindNeighbors(struct TBestNeighbors *neighbors,
++                   struct link_entry **bestNeighbor,
++                   struct TBmfInterface *intf,
++                   union olsr_ip_addr *source,
++                   union olsr_ip_addr *forwardedBy, union olsr_ip_addr *forwardedTo, int *nPossibleNeighbors);
++
++int CreateBmfNetworkInterfaces(struct interface *skipThisIntf);
++void AddInterface(struct interface *newIntf);
++void CloseBmfNetworkInterfaces(void);
++int AddNonOlsrBmfIf(const char *ifName, void *data, set_plugin_parameter_addon addon);
++int set_MDNS_TTL(const char *MDNS_TTL, void *data, set_plugin_parameter_addon addon);
++int IsNonOlsrBmfIf(const char *ifName);
++void CheckAndUpdateLocalBroadcast(unsigned char *ipPacket, union olsr_ip_addr *broadAddr);
++void AddMulticastRoute(void);
++void DeleteMulticastRoute(void);
++
++#endif /* _BMF_NETWORKINTERFACES_H */
++
++/*
++ * Local Variables:
++ * c-basic-offset: 2
++ * indent-tabs-mode: nil
++ * End:
++ */
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/Packet.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/Packet.c	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,237 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++#include "Packet.h"
++
++/* System includes */
++#include <stddef.h>             /* NULL */
++#include <assert.h>             /* assert() */
++#include <string.h>             /* memcpy() */
++#include <sys/types.h>          /* u_int8_t, u_int16_t, u_int32_t */
++#include <netinet/in.h>         /* ntohs(), htons() */
++#include <netinet/ip.h>         /* struct iphdr */
++
++
++/* -------------------------------------------------------------------------
++ * Function   : IsIpFragment
++ * Description: Check if an IP packet is an IP fragment
++ * Input      : ipPacket - the IP packet
++ * Output     : none
++ * Return     : true (1) or false (0)
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++int
++IsIpFragment(unsigned char *ipPacket)
++{
++  struct ip *iph;
++
++  assert(ipPacket != NULL);
++
++  iph = (struct ip *)ipPacket;
++  if ((ntohs(iph->ip_off) & IP_OFFMASK) != 0) {
++    return 1;
++  }
++  return 0;
++}                               /* IsIpFragment */
++
++/* -------------------------------------------------------------------------
++ * Function   : GetIpTotalLength
++ * Description: Retrieve the total length of the IP packet (in bytes) of
++ *              an IP packet
++ * Input      : ipPacket - the IP packet
++ * Output     : none
++ * Return     : IP packet length
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++u_int16_t
++GetIpTotalLength(unsigned char *ipPacket)
++{
++  struct iphdr *iph;
++
++  assert(ipPacket != NULL);
++
++  iph = (struct iphdr *)ipPacket;
++  return ntohs(iph->tot_len);
++}                               /* GetIpTotalLength */
++
++/* -------------------------------------------------------------------------
++ * Function   : GetIpHeaderLength
++ * Description: Retrieve the IP header length (in bytes) of an IP packet
++ * Input      : ipPacket - the IP packet
++ * Output     : none
++ * Return     : IP header length
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++unsigned int
++GetIpHeaderLength(unsigned char *ipPacket)
++{
++  struct iphdr *iph;
++
++  assert(ipPacket != NULL);
++
++  iph = (struct iphdr *)ipPacket;
++  return iph->ihl << 2;
++}                               /* GetIpHeaderLength */
++
++/* -------------------------------------------------------------------------
++ * Function   : GetTtl
++ * Description: Retrieve the TTL (Time To Live) value from the IP header of
++ *              an IP packet
++ * Input      : ipPacket - the IP packet
++ * Output     : none
++ * Return     : TTL value
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++u_int8_t
++GetTtl(unsigned char *ipPacket)
++{
++  struct iphdr *iph;
++
++  assert(ipPacket != NULL);
++
++  iph = (struct iphdr *)ipPacket;
++  return iph->ttl;
++}                               /* GetTtl */
++
++/* -------------------------------------------------------------------------
++ * Function   : SaveTtlAndChecksum
++ * Description: Save the TTL (Time To Live) value and IP checksum as found in
++ *              the IP header of an IP packet
++ * Input      : ipPacket - the IP packet
++ * Output     : sttl - the TTL and checksum values
++ * Return     : none
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++void
++SaveTtlAndChecksum(unsigned char *ipPacket, struct TSaveTtl *sttl)
++{
++  struct iphdr *iph;
++
++  assert(ipPacket != NULL && sttl != NULL);
++
++  iph = (struct iphdr *)ipPacket;
++  sttl->ttl = iph->ttl;
++  sttl->check = ntohs(iph->check);
++}                               /* SaveTtlAndChecksum */
++
++/* -------------------------------------------------------------------------
++ * Function   : RestoreTtlAndChecksum
++ * Description: Restore the TTL (Time To Live) value and IP checksum in
++ *              the IP header of an IP packet
++ * Input      : ipPacket - the IP packet
++ *              sttl - the TTL and checksum values
++ * Output     : none
++ * Return     : none
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++void
++RestoreTtlAndChecksum(unsigned char *ipPacket, struct TSaveTtl *sttl)
++{
++  struct iphdr *iph;
++
++  assert(ipPacket != NULL && sttl != NULL);
++
++  iph = (struct iphdr *)ipPacket;
++  iph->ttl = sttl->ttl;
++  iph->check = htons(sttl->check);
++}                               /* RestoreTtlAndChecksum */
++
++/* -------------------------------------------------------------------------
++ * Function   : DecreaseTtlAndUpdateHeaderChecksum
++ * Description: For an IP packet, decrement the TTL value and update the IP header
++ *              checksum accordingly.
++ * Input      : ipPacket - the IP packet
++ * Output     : none
++ * Return     : none
++ * Data Used  : none
++ * Notes      : See also RFC1141
++ * ------------------------------------------------------------------------- */
++void
++DecreaseTtlAndUpdateHeaderChecksum(unsigned char *ipPacket)
++{
++  struct iphdr *iph;
++  u_int32_t sum;
++
++  assert(ipPacket != NULL);
++
++  iph = (struct iphdr *)ipPacket;
++
++  iph->ttl--;                   /* decrement ttl */
++  sum = ntohs(iph->check) + 0x100;      /* increment checksum high byte */
++  iph->check = htons(sum + (sum >> 16));        /* add carry */
++}                               /* DecreaseTtlAndUpdateHeaderChecksum */
++
++/* -------------------------------------------------------------------------
++ * Function   : GetIpHeader
++ * Description: Retrieve the IP header from BMF encapsulation UDP data
++ * Input      : encapsulationUdpData - the encapsulation UDP data
++ * Output     : none
++ * Return     : IP header
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++struct ip *
++GetIpHeader(unsigned char *encapsulationUdpData)
++{
++  return (struct ip *)(encapsulationUdpData + ENCAP_HDR_LEN);
++}                               /* GetIpHeader */
++
++/* -------------------------------------------------------------------------
++ * Function   : GetIpPacket
++ * Description: Retrieve the IP packet from BMF encapsulation UDP data
++ * Input      : encapsulationUdpData - the encapsulation UDP data
++ * Output     : none
++ * Return     : The IP packet
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++unsigned char *
++GetIpPacket(unsigned char *encapsulationUdpData)
++{
++  return encapsulationUdpData + ENCAP_HDR_LEN;
++}                               /* GetIpPacket */
++
++
++
++
++/*
++ * Local Variables:
++ * c-basic-offset: 2
++ * indent-tabs-mode: nil
++ * End:
++ */
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/Packet.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/Packet.h	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,81 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++
++#ifndef _MDNS_PACKET_H
++#define _MDNS_PACKET_H
++
++
++/* System includes */
++#include <net/if.h>             /* IFNAMSIZ, IFHWADDRLEN */
++#include <sys/types.h>          /* u_int8_t, u_int16_t */
++
++/* BMF-encapsulated packets are Ethernet-IP-UDP packets, which start
++ * with a 8-bytes BMF header (struct TEncapHeader), followed by the
++ * encapsulated Ethernet-IP packet itself */
++
++struct TEncapHeader {
++  /* Use a standard Type-Length-Value (TLV) element */
++  u_int8_t type;
++  u_int8_t len;
++  u_int16_t reserved;                  /* Always 0 */
++  u_int32_t crc32;
++} __attribute__ ((__packed__));
++
++#define ENCAP_HDR_LEN ((int)sizeof(struct TEncapHeader))
++#define BMF_ENCAP_TYPE 1
++#define BMF_ENCAP_LEN 6
++
++struct TSaveTtl {
++  u_int8_t ttl;
++  u_int16_t check;
++} __attribute__ ((__packed__));
++
++int IsIpFragment(unsigned char *ipPacket);
++u_int16_t GetIpTotalLength(unsigned char *ipPacket);
++unsigned int GetIpHeaderLength(unsigned char *ipPacket);
++u_int8_t GetTtl(unsigned char *ipPacket);
++void SaveTtlAndChecksum(unsigned char *ipPacket, struct TSaveTtl *sttl);
++void RestoreTtlAndChecksum(unsigned char *ipPacket, struct TSaveTtl *sttl);
++void DecreaseTtlAndUpdateHeaderChecksum(unsigned char *ipPacket);
++struct ip *GetIpHeader(unsigned char *encapsulationUdpData);
++unsigned char *GetIpPacket(unsigned char *encapsulationUdpData);
++
++#endif /* _MDNS_PACKET_H */
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/mdns.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/mdns.c	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,490 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++
++#include "mdns.h"
++
++/* System includes */
++#include <stddef.h>             /* NULL */
++#include <sys/types.h>          /* ssize_t */
++#include <string.h>             /* strerror() */
++#include <stdarg.h>             /* va_list, va_start, va_end */
++#include <errno.h>              /* errno */
++#include <assert.h>             /* assert() */
++#include <linux/if_ether.h>     /* ETH_P_IP */
++#include <linux/if_packet.h>    /* struct sockaddr_ll, PACKET_MULTICAST */
++//#include <pthread.h> /* pthread_t, pthread_create() */
++#include <signal.h>             /* sigset_t, sigfillset(), sigdelset(), SIGINT */
++#include <netinet/ip.h>         /* struct ip */
++#include <netinet/udp.h>        /* struct udphdr */
++#include <unistd.h>             /* close() */
++
++#include <netinet/in.h>
++#include <netinet/ip6.h>
++
++/* OLSRD includes */
++#include "plugin_util.h"        /* set_plugin_int */
++#include "defs.h"               /* olsr_cnf, //OLSR_PRINTF */
++#include "ipcalc.h"
++#include "olsr.h"               /* //OLSR_PRINTF */
++#include "mid_set.h"            /* mid_lookup_main_addr() */
++#include "link_set.h"           /* get_best_link_to_neighbor() */
++#include "net_olsr.h"           /* ipequal */
++
++/* plugin includes */
++#include "NetworkInterfaces.h"  /* TBmfInterface, CreateBmfNetworkInterfaces(), CloseBmfNetworkInterfaces() */
++#include "Address.h"            /* IsMulticast() */
++#include "Packet.h"             /* ENCAP_HDR_LEN, BMF_ENCAP_TYPE, BMF_ENCAP_LEN etc. */
++
++int my_DNS_TTL=0;
++
++/* -------------------------------------------------------------------------
++ * Function   : PacketReceivedFromOLSR
++ * Description: Handle a received packet from a OLSR message
++ * Input      : ipPacket into an unsigned char and the lenght of the packet
++ * Output     : none
++ * Return     : none
++ * Data Used  : BmfInterfaces
++ * ------------------------------------------------------------------------- */
++static void
++PacketReceivedFromOLSR(unsigned char *encapsulationUdpData, int len)
++{
++  struct ip *ipHeader;                 /* IP header inside the encapsulated IP packet */
++  struct ip6_hdr *ip6Header;                 /* IP header inside the encapsulated IP packet */
++  //union olsr_ip_addr mcSrc;            /* Original source of the encapsulated multicast packet */
++  //union olsr_ip_addr mcDst;            /* Multicast destination of the encapsulated packet */
++  struct TBmfInterface *walker;
++  int stripped_len = 0;
++  ipHeader = (struct ip *)encapsulationUdpData;
++  ip6Header = (struct ip6_hdr *)encapsulationUdpData;
++  //mcSrc.v4 = ipHeader->ip_src;
++  //mcDst.v4 = ipHeader->ip_dst;
++  //OLSR_DEBUG(LOG_PLUGINS, "MDNS PLUGIN got packet from OLSR message\n");
++
++
++  /* Check with each network interface what needs to be done on it */
++  for (walker = BmfInterfaces; walker != NULL; walker = walker->next) {
++    /* To a non-OLSR interface: unpack the encapsulated IP packet and forward it */
++    if (walker->olsrIntf == NULL) {
++      int nBytesWritten;
++      struct sockaddr_ll dest;
++
++      memset(&dest, 0, sizeof(dest));
++      dest.sll_family = AF_PACKET;
++      if ((encapsulationUdpData[0] & 0xf0) == 0x40) {
++        dest.sll_protocol = htons(ETH_P_IP);
++	stripped_len = ntohs(ipHeader->ip_len);
++	}
++      if ((encapsulationUdpData[0] & 0xf0) == 0x60) {
++        dest.sll_protocol = htons(ETH_P_IPV6);
++        stripped_len = 40 + ntohs(ip6Header->ip6_plen); //IPv6 Header size (40) + payload_len 
++        }
++      // Sven-Ola: Don't know how to handle the "stripped_len is uninitialized" condition, maybe exit(1) is better...?
++      if (0 == stripped_len) return;
++      //TODO: if packet is not IP die here
++      
++      if (stripped_len > len) {
++	//OLSR_DEBUG(LOG_PLUGINS, "MDNS: Stripped len bigger than len ??\n");
++	}
++      dest.sll_ifindex = if_nametoindex(walker->ifName);
++      dest.sll_halen = IFHWADDRLEN;
++
++      /* Use all-ones as destination MAC address. When the IP destination is
++       * a multicast address, the destination MAC address should normally also
++       * be a multicast address. E.g., when the destination IP is 224.0.0.1,
++       * the destination MAC should be 01:00:5e:00:00:01. However, it does not
++       * seem to matter when the destination MAC address is set to all-ones
++       * in that case. */
++      memset(dest.sll_addr, 0xFF, IFHWADDRLEN);
++
++      nBytesWritten = sendto(walker->capturingSkfd, encapsulationUdpData, stripped_len, 0, (struct sockaddr *)&dest, sizeof(dest));
++      if (nBytesWritten != stripped_len) {
++        BmfPError("sendto() error forwarding unpacked encapsulated pkt on \"%s\"", walker->ifName);
++      } else {
++
++        //OLSR_PRINTF(
++        //  2,
++        //  "%s: --> unpacked and forwarded on \"%s\"\n",
++        //  PLUGIN_NAME_SHORT,
++        //  walker->ifName);
++      }
++    }                           /* if (walker->olsrIntf == NULL) */
++  }
++}                               /* PacketReceivedFromOLSR */
++
++
++void
++olsr_parser(union olsr_message *m, struct interface *in_if __attribute__ ((unused)), union olsr_ip_addr *ipaddr)
++{
++  union olsr_ip_addr originator;
++  int size;
++  uint32_t vtime;
++  //OLSR_DEBUG(LOG_PLUGINS, "MDNS PLUGIN: Received msg in parser\n");
++  /* Fetch the originator of the messsage */
++  if (olsr_cnf->ip_version == AF_INET) {
++    memcpy(&originator, &m->v4.originator, olsr_cnf->ipsize);
++    vtime = me_to_reltime(m->v4.olsr_vtime);
++    size = ntohs(m->v4.olsr_msgsize);
++  } else {
++    memcpy(&originator, &m->v6.originator, olsr_cnf->ipsize);
++    vtime = me_to_reltime(m->v6.olsr_vtime);
++    size = ntohs(m->v6.olsr_msgsize);
++  }
++
++  /* Check if message originated from this node.
++   *         If so - back off */
++  if (ipequal(&originator, &olsr_cnf->main_addr))
++    return ;
++
++  /* Check that the neighbor this message was received from is symmetric.
++   *         If not - back off*/
++  if (check_neighbor_link(ipaddr) != SYM_LINK) {
++    //struct ipaddr_str strbuf;
++    //OLSR_PRINTF(3, "NAME PLUGIN: Received msg from NON SYM neighbor %s\n", olsr_ip_to_string(&strbuf, ipaddr));
++    return ;
++  }
++
++  if (olsr_cnf->ip_version == AF_INET) {
++    PacketReceivedFromOLSR((unsigned char *)&m->v4.message, size - 12);
++  } else {
++    PacketReceivedFromOLSR((unsigned char *)&m->v6.message, size - 12 - 96);
++  }
++
++}
++
++//Sends a packet in the OLSR network
++void
++olsr_mdns_gen(unsigned char *packet, int len)
++{
++  /* send buffer: huge */
++  char buffer[10240];
++  int aligned_size;
++  union olsr_message *message = (union olsr_message *)buffer;
++  struct interface *ifn;
++  
++  aligned_size=len;
++
++if ((aligned_size % 4) != 0) {
++    aligned_size = (aligned_size - (aligned_size % 4)) + 4;
++  }
++
++  /* fill message */
++  if (olsr_cnf->ip_version == AF_INET) {
++    /* IPv4 */
++    message->v4.olsr_msgtype = MESSAGE_TYPE;
++    message->v4.olsr_vtime = reltime_to_me(MDNS_VALID_TIME * MSEC_PER_SEC);
++    memcpy(&message->v4.originator, &olsr_cnf->main_addr, olsr_cnf->ipsize);
++    //message->v4.ttl = MAX_TTL;
++    if (my_MDNS_TTL) message->v4.ttl = my_MDNS_TTL;
++    else message->v4.ttl = MAX_TTL;
++    message->v4.hopcnt = 0;
++    message->v4.seqno = htons(get_msg_seqno());
++
++    message->v4.olsr_msgsize = htons(aligned_size + 12);
++
++    memset(&message->v4.message, 0, aligned_size);
++    memcpy(&message->v4.message, packet, len);
++    aligned_size = aligned_size + 12;
++  } else {
++    /* IPv6 */
++    message->v6.olsr_msgtype = MESSAGE_TYPE;
++    message->v6.olsr_vtime = reltime_to_me(MDNS_VALID_TIME * MSEC_PER_SEC);
++    memcpy(&message->v6.originator, &olsr_cnf->main_addr, olsr_cnf->ipsize);
++    //message->v6.ttl = MAX_TTL;
++    if (my_MDNS_TTL) message->v6.ttl = my_MDNS_TTL;
++    else message->v6.ttl = MAX_TTL;
++    message->v6.hopcnt = 0;
++    message->v6.seqno = htons(get_msg_seqno());
++
++    message->v6.olsr_msgsize = htons(aligned_size + 12 + 96);
++    memset(&message->v6.message, 0, aligned_size);
++    memcpy(&message->v6.message, packet, len);
++    aligned_size = aligned_size + 12 + 96;
++  }
++
++  /* looping trough interfaces */
++ for (ifn = ifnet; ifn; ifn = ifn->int_next) {
++    //OLSR_PRINTF(1, "MDNS PLUGIN: Generating packet - [%s]\n", ifn->int_name);
++
++    if (net_outbuffer_push(ifn, message, aligned_size) != aligned_size) {
++      /* send data and try again */
++      net_output(ifn);
++      if (net_outbuffer_push(ifn, message, aligned_size) != aligned_size) {
++        //OLSR_PRINTF(1, "MDNS PLUGIN: could not send on interface: %s\n", ifn->int_name);
++      }
++    }
++  }
++}
++
++/* -------------------------------------------------------------------------
++ * Function   : BmfPError
++ * Description: Prints an error message at OLSR debug level 1.
++ *              First the plug-in name is printed. Then (if format is not NULL
++ *              and *format is not empty) the arguments are printed, followed
++ *              by a colon and a blank. Then the message and a new-line.
++ * Input      : format, arguments
++ * Output     : none
++ * Return     : none
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++
++void
++BmfPError(const char *format, ...)
++{
++#define MAX_STR_DESC 255
++  char strDesc[MAX_STR_DESC];
++
++#if !defined REMOVE_LOG_DEBUG
++  char *stringErr = strerror(errno);
++#endif
++  /* Rely on short-circuit boolean evaluation */
++  if (format == NULL || *format == '\0') {
++    //OLSR_DEBUG(LOG_PLUGINS, "%s: %s\n", PLUGIN_NAME, stringErr);
++  } else {
++    va_list arglist;
++
++    va_start(arglist, format);
++    vsnprintf(strDesc, MAX_STR_DESC, format, arglist);
++    va_end(arglist);
++
++    strDesc[MAX_STR_DESC - 1] = '\0';   /* Ensures null termination */
++
++    //OLSR_DEBUG(LOG_PLUGINS, "%s: %s\n", strDesc, stringErr);
++  }
++}                               /* BmfPError */
++
++/* -------------------------------------------------------------------------
++ * Function   : MainAddressOf
++ * Description: Lookup the main address of a node
++ * Input      : ip - IP address of the node
++ * Output     : none
++ * Return     : The main IP address of the node
++ * Data Used  : none
++ * ------------------------------------------------------------------------- */
++union olsr_ip_addr *
++MainAddressOf(union olsr_ip_addr *ip)
++{
++  union olsr_ip_addr *result;
++
++  /* TODO: mid_lookup_main_addr() is not thread-safe! */
++  result = mid_lookup_main_addr(ip);
++  if (result == NULL) {
++    result = ip;
++  }
++  return result;
++}                               /* MainAddressOf */
++
++
++/* -------------------------------------------------------------------------
++ * Function   : BmfPacketCaptured
++ * Description: Handle a captured IP packet
++ * Input      : intf - the network interface on which the packet was captured
++ *              sllPkttype - the type of packet. Either PACKET_OUTGOING,
++ *                PACKET_BROADCAST or PACKET_MULTICAST.
++ *              encapsulationUdpData - space for the encapsulation header, followed by
++ *                the captured IP packet
++ * Output     : none
++ * Return     : none
++ * Data Used  : BmfInterfaces
++ * Notes      : The IP packet is assumed to be captured on a socket of family
++ *              PF_PACKET and type SOCK_DGRAM (cooked).
++ * ------------------------------------------------------------------------- */
++static void
++BmfPacketCaptured(
++                   //struct TBmfInterface* intf,
++                   //unsigned char sllPkttype,
++                   unsigned char *encapsulationUdpData, int nBytes)
++{
++  union olsr_ip_addr src;              /* Source IP address in captured packet */
++  union olsr_ip_addr dst;              /* Destination IP address in captured packet */
++  union olsr_ip_addr *origIp;          /* Main OLSR address of source of captured packet */
++  struct ip *ipHeader;                 /* The IP header inside the captured IP packet */
++  struct ip6_hdr *ipHeader6;           /* The IP header inside the captured IP packet */
++  struct udphdr *udpHeader;
++  u_int16_t destPort;
++
++  if ((encapsulationUdpData[0] & 0xf0) == 0x40) {       //IPV4
++
++    ipHeader = (struct ip *)encapsulationUdpData;
++
++    dst.v4 = ipHeader->ip_dst;
++
++    /* Only forward multicast packets. If configured, also forward local broadcast packets */
++    if (IsMulticast(&dst)) {
++      /* continue */
++    } else {
++      return;
++    }
++    if (ipHeader->ip_p != SOL_UDP) {
++      /* Not UDP */
++      //OLSR_PRINTF(1,"NON UDP PACKET\n");
++      return;                   /* for */
++    }
++    udpHeader = (struct udphdr *)(encapsulationUdpData + GetIpHeaderLength(encapsulationUdpData));
++    destPort = ntohs(udpHeader->dest);
++    if (destPort != 5353) {
++      return;
++    }
++  }                             //END IPV4
++
++  else if ((encapsulationUdpData[0] & 0xf0) == 0x60) {  //IPv6
++
++    ipHeader6 = (struct ip6_hdr *)encapsulationUdpData;
++    if (ipHeader6->ip6_dst.s6_addr[0] == 0xff)  //Multicast
++    {
++      //Continua
++    } else {
++      return;                   //not multicast
++    }
++    if (ipHeader6->ip6_nxt != SOL_UDP) {
++      /* Not UDP */
++      //OLSR_PRINTF(1,"NON UDP PACKET\n");
++      return;                   /* for */
++    }
++    udpHeader = (struct udphdr *)(encapsulationUdpData + 40);
++    destPort = ntohs(udpHeader->dest);
++    if (destPort != 5353) {
++      return;
++    }
++  }                             //END IPV6
++  else
++    return;                     //Is not IP packet
++
++  /* Check if the frame is captured on an OLSR-enabled interface */
++  //isFromOlsrIntf = (intf->olsrIntf != NULL); TODO: put again this check
++
++
++  /* Lookup main address of source in the MID table of OLSR */
++  origIp = MainAddressOf(&src);
++
++  // send the packet to OLSR forward mechanism
++  olsr_mdns_gen(encapsulationUdpData, nBytes);
++}                               /* BmfPacketCaptured */
++
++
++/* -------------------------------------------------------------------------
++ * Function   : DoMDNS
++ * Description: This function is registered with the OLSR scheduler and called when something is captured
++ * Input      : none
++ * Output     : none
++ * Return     : none
++ * Data Used  :
++ * ------------------------------------------------------------------------- */
++void
++DoMDNS(int skfd, void *data __attribute__ ((unused)), unsigned int flags __attribute__ ((unused)))
++{
++  unsigned char rxBuffer[BMF_BUFFER_SIZE];
++  if (skfd >= 0) {
++    struct sockaddr_ll pktAddr;
++    socklen_t addrLen = sizeof(pktAddr);
++    int nBytes;
++    unsigned char *ipPacket;
++
++    /* Receive the captured Ethernet frame, leaving space for the BMF
++     * encapsulation header */
++    ipPacket = GetIpPacket(rxBuffer);
++    nBytes = recvfrom(skfd, ipPacket, BMF_BUFFER_SIZE,  //TODO: understand how to change this
++                      0, (struct sockaddr *)&pktAddr, &addrLen);
++    if (nBytes < 0) {
++
++      return;                   /* for */
++    }
++
++    /* if (nBytes < 0) */
++    /* Check if the number of received bytes is large enough for an IP
++     * packet which contains at least a minimum-size IP header.
++     * Note: There is an apparent bug in the packet socket implementation in
++     * combination with VLAN interfaces. On a VLAN interface, the value returned
++     * by 'recvfrom' may (but need not) be 4 (bytes) larger than the value
++     * returned on a non-VLAN interface, for the same ethernet frame. */
++    if (nBytes < (int)sizeof(struct ip)) {
++      ////OLSR_PRINTF(
++      //              1,
++      //              "%s: captured frame too short (%d bytes) on \"%s\"\n",
++      //              PLUGIN_NAME,
++      //              nBytes,
++      //              walker->ifName);
++
++      return;                   /* for */
++    }
++
++    if (pktAddr.sll_pkttype == PACKET_OUTGOING ||
++        pktAddr.sll_pkttype == PACKET_MULTICAST || pktAddr.sll_pkttype == PACKET_BROADCAST) {
++      /* A multicast or broadcast packet was captured */
++
++      ////OLSR_PRINTF(
++      //              1,
++      //              "%s: captured frame (%d bytes) on \"%s\"\n",
++      //              PLUGIN_NAME,
++      //              nBytes,
++      //              walker->ifName);
++      //BmfPacketCaptured(walker, pktAddr.sll_pkttype, rxBuffer);
++      BmfPacketCaptured(ipPacket, nBytes);
++
++    }                           /* if (pktAddr.sll_pkttype == ...) */
++  }                             /* if (skfd >= 0 && (FD_ISSET...)) */
++}                               /* DoMDNS */
++
++int
++InitMDNS(struct interface *skipThisIntf)
++{
++
++
++  //Tells OLSR to launch olsr_parser when the packets for this plugin arrive
++  olsr_parser_add_function(&olsr_parser, PARSER_TYPE,1);
++  //Creates captures sockets and register them to the OLSR scheduler
++  CreateBmfNetworkInterfaces(skipThisIntf);
++
++  return 0;
++}                               /* InitMDNS */
++
++/* -------------------------------------------------------------------------
++ * Function   : CloseMDNS
++ * Description: Close the MDNS plugin and clean up
++ * Input      : none
++ * Output     : none
++ * Return     : none
++ * Data Used  :
++ * ------------------------------------------------------------------------- */
++void
++CloseMDNS(void)
++{
++  CloseBmfNetworkInterfaces();
++}
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/mdns.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/mdns.h	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,96 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++
++#ifndef _MDNS_MDNS_H
++#define _MDNS_MDNS_H
++
++
++#include "olsrd_plugin.h"             /* union set_plugin_parameter_addon */
++#include "duplicate_set.h"
++#include "socket_parser.h"
++
++#define MESSAGE_TYPE 132
++#define PARSER_TYPE		MESSAGE_TYPE
++#define EMISSION_INTERVAL       10      /* seconds */
++#define EMISSION_JITTER         25      /* percent */
++#define MDNS_VALID_TIME          1800   /* seconds */
++
++/* BMF plugin data */
++#define PLUGIN_NAME "OLSRD MDNS plugin"
++#define PLUGIN_NAME_SHORT "OLSRD MDNS"
++#define PLUGIN_VERSION "1.0.0 (" __DATE__ " " __TIME__ ")"
++#define PLUGIN_COPYRIGHT "  (C) Ninux.org"
++#define PLUGIN_AUTHOR "  Saverio Proto (zioproto@gmail.com)"
++#define MOD_DESC PLUGIN_NAME " " PLUGIN_VERSION "\n" PLUGIN_COPYRIGHT "\n" PLUGIN_AUTHOR
++#define PLUGIN_INTERFACE_VERSION 5
++
++/* UDP-Port on which multicast packets are encapsulated */
++//#define BMF_ENCAP_PORT 50698
++
++/* Forward declaration of OLSR interface type */
++struct interface;
++
++//extern int FanOutLimit;
++//extern int BroadcastRetransmitCount;
++
++void DoMDNS(int sd, void *x, unsigned int y);
++void BmfPError(const char *format, ...) __attribute__ ((format(printf, 1, 2)));
++union olsr_ip_addr *MainAddressOf(union olsr_ip_addr *ip);
++//int InterfaceChange(struct interface* interf, int action);
++//int SetFanOutLimit(const char* value, void* data, set_plugin_parameter_addon addon);
++//int InitBmf(struct interface* skipThisIntf);
++//void CloseBmf(void);
++int InitMDNS(struct interface *skipThisIntf);
++void CloseMDNS(void);
++
++void olsr_mdns_gen(unsigned char *packet, int len);
++
++/* Parser function to register with the scheduler */
++void olsr_parser(union olsr_message *, struct interface *, union olsr_ip_addr *);
++
++#endif /* _MDNS_MDNS_H */
++
++/*
++ * Local Variables:
++ * c-basic-offset: 2
++ * indent-tabs-mode: nil
++ * End:
++ */
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/src/olsrd_plugin.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/src/olsrd_plugin.c	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,192 @@
++/*
++ * The olsr.org Optimized Link-State Routing daemon(olsrd)
++ * Copyright (c) 2004-2009, the olsr.org team - see HISTORY file
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * * Redistributions of source code must retain the above copyright
++ *   notice, this list of conditions and the following disclaimer.
++ * * Redistributions in binary form must reproduce the above copyright
++ *   notice, this list of conditions and the following disclaimer in
++ *   the documentation and/or other materials provided with the
++ *   distribution.
++ * * Neither the name of olsr.org, olsrd nor the names of its
++ *   contributors may be used to endorse or promote products derived
++ *   from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Visit http://www.olsr.org for more information.
++ *
++ * If you find this software useful feel free to make a donation
++ * to the project. For more information see the website or contact
++ * the copyright holders.
++ *
++ */
++
++/* System includes */
++#include <assert.h>             /* assert() */
++#include <stddef.h>             /* NULL */
++
++/* OLSRD includes */
++#include "olsrd_plugin.h"
++#include "plugin_util.h"
++#include "defs.h"               /* uint8_t, olsr_cnf */
++#include "scheduler.h"          /* olsr_start_timer() */
++#include "olsr_cfg.h"           /* olsr_cnf() */
++#include "olsr_cookie.h"        /* olsr_alloc_cookie() */
++
++/* BMF includes */
++#include "mdns.h"               /* InitBmf(), CloseBmf() */
++#include "NetworkInterfaces.h"  /* AddNonOlsrBmfIf(), SetBmfInterfaceIp(), ... */
++#include "Address.h"            /* DoLocalBroadcast() */
++
++static void __attribute__ ((constructor)) my_init(void);
++static void __attribute__ ((destructor)) my_fini(void);
++
++//static struct olsr_cookie_info *prune_packet_history_timer_cookie;
++
++void olsr_plugin_exit(void);
++
++/* -------------------------------------------------------------------------
++ * Function   : olsrd_plugin_interface_version
++ * Description: Plugin interface version
++ * Input      : none
++ * Output     : none
++ * Return     : BMF plugin interface version number
++ * Data Used  : none
++ * Notes      : Called by main OLSRD (olsr_load_dl) to check plugin interface
++ *              version
++ * ------------------------------------------------------------------------- */
++int
++olsrd_plugin_interface_version(void)
++{
++  return PLUGIN_INTERFACE_VERSION;
++}
++
++/* -------------------------------------------------------------------------
++ * Function   : olsrd_plugin_init
++ * Description: Plugin initialisation
++ * Input      : none
++ * Output     : none
++ * Return     : fail (0) or success (1)
++ * Data Used  : olsr_cnf
++ * Notes      : Called by main OLSRD (init_olsr_plugin) to initialize plugin
++ * ------------------------------------------------------------------------- */
++int
++olsrd_plugin_init(void)
++{
++  /* Clear the packet history */
++  //InitPacketHistory();
++
++  /* Register ifchange function */
++  //add_ifchgf(&InterfaceChange);
++
++  /* create the cookie */
++  //prune_packet_history_timer_cookie = olsr_alloc_cookie("BMF: Prune Packet History", OLSR_COOKIE_TYPE_TIMER);
++
++  /* Register the duplicate registration pruning process */
++  //olsr_start_timer(3 * MSEC_PER_SEC, 0, OLSR_TIMER_PERIODIC,
++  //                 &PrunePacketHistory, NULL, prune_packet_history_timer_cookie->ci_id);
++
++
++  return InitMDNS(NULL);
++}
++
++/* -------------------------------------------------------------------------
++ * Function   : olsr_plugin_exit
++ * Description: Plugin cleanup
++ * Input      : none
++ * Output     : none
++ * Return     : none
++ * Data Used  : none
++ * Notes      : Called by my_fini() at unload of shared object
++ * ------------------------------------------------------------------------- */
++void
++olsr_plugin_exit(void)
++{
++  CloseMDNS();
++}
++
++static const struct olsrd_plugin_parameters plugin_parameters[] = {
++  {.name = "NonOlsrIf",.set_plugin_parameter = &AddNonOlsrBmfIf,.data = NULL},
++  {.name = "MDNS_TTL", .set_plugin_parameter = &set_MDNS_TTL, .data = NULL },
++  //{ .name = "DoLocalBroadcast", .set_plugin_parameter = &DoLocalBroadcast, .data = NULL },
++  //{ .name = "BmfInterface", .set_plugin_parameter = &SetBmfInterfaceName, .data = NULL },
++  //{ .name = "BmfInterfaceIp", .set_plugin_parameter = &SetBmfInterfaceIp, .data = NULL },
++  //{ .name = "CapturePacketsOnOlsrInterfaces", .set_plugin_parameter = &SetCapturePacketsOnOlsrInterfaces, .data = NULL },
++  //{ .name = "BmfMechanism", .set_plugin_parameter = &SetBmfMechanism, .data = NULL },
++  //{ .name = "FanOutLimit", .set_plugin_parameter = &SetFanOutLimit, .data = NULL },
++  //{ .name = "BroadcastRetransmitCount", .set_plugin_parameter = &set_plugin_int, .data = &BroadcastRetransmitCount},
++};
++
++/* -------------------------------------------------------------------------
++ * Function   : olsrd_get_plugin_parameters
++ * Description: Return the parameter table and its size
++ * Input      : none
++ * Output     : params - the parameter table
++ *              size - its size in no. of entries
++ * Return     : none
++ * Data Used  : plugin_parameters
++ * Notes      : Called by main OLSR (init_olsr_plugin) for all plugins
++ * ------------------------------------------------------------------------- */
++void
++olsrd_get_plugin_parameters(const struct olsrd_plugin_parameters **params, int *size)
++{
++  *params = plugin_parameters;
++  *size = ARRAYSIZE(plugin_parameters);
++}
++
++/* -------------------------------------------------------------------------
++ * Function   : my_init
++ * Description: Plugin constructor
++ * Input      : none
++ * Output     : none
++ * Return     : none
++ * Data Used  : none
++ * Notes      : Called at load of shared object
++ * ------------------------------------------------------------------------- */
++static void
++my_init(void)
++{
++  /* Print plugin info to stdout */
++  printf("%s\n", MOD_DESC);
++
++  return;
++}
++
++/* -------------------------------------------------------------------------
++ * Function   : my_fini
++ * Description: Plugin destructor
++ * Input      : none
++ * Output     : none
++ * Return     : none
++ * Data Used  : none
++ * Notes      : Called at unload of shared object
++ * ------------------------------------------------------------------------- */
++static void
++my_fini(void)
++{
++  olsr_plugin_exit();
++}
++
++/*
++ * Local Variables:
++ * c-basic-offset: 2
++ * indent-tabs-mode: nil
++ * End:
++ */
+diff -r aac621d9803e -r 2226e0b6c6bc lib/mdns/version-script.txt
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/mdns/version-script.txt	Tue Oct 13 17:55:14 2009 +0200
+@@ -0,0 +1,10 @@
++VERS_1.0
++{
++  global:
++    olsrd_plugin_interface_version;
++    olsrd_plugin_init;
++    olsrd_get_plugin_parameters;
++
++  local:
++    *;
++};

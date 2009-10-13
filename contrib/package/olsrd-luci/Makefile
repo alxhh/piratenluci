@@ -117,11 +117,11 @@ define Package/olsrd-luci-mod-watchdog
 	DEPENDS:=olsrd-luci
 endef
 
-#define Package/olsrd-luci-mod-mdns
-#	$(call Package/olsrd-luci/common_info)
-#	TITLE:=OLSR - mDNS Plugin
-#	DEPENDS:=olsrd-luci
-#endef
+define Package/olsrd-luci-mod-mdns
+	$(call Package/olsrd-luci/common_info)
+	TITLE:=OLSR - mDNS Plugin
+	DEPENDS:=olsrd-luci
+endef
 
 TARGET_CFLAGS += $(FPIC)
 
@@ -138,8 +138,8 @@ define Build/Compile
 		MANDIR="$(PKG_INSTALL_DIR)/usr/share/man" \
 		STRIP="true" \
 		INSTALL_LIB="true" \
-		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog"
-#		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog mdns"
+#		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog"
+		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog mdns"
 endef
 
 define Package/olsrd-luci/install
@@ -206,10 +206,10 @@ define Package/olsrd-luci-mod-watchdog/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/lib/watchdog/olsrd_watchdog.so.* $(1)/usr/lib/
 endef
 
-#define Package/olsrd-luci-mod-mdns/install
-#	$(INSTALL_DIR) $(1)/usr/lib
-#	$(INSTALL_BIN) $(PKG_BUILD_DIR)/lib/mdns/olsrd_mdns.so.* $(1)/usr/lib/
-#endef
+define Package/olsrd-luci-mod-mdns/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/lib/mdns/olsrd_mdns.so.* $(1)/usr/lib/
+endef
 
 
 $(eval $(call BuildPackage,olsrd-luci))
@@ -224,4 +224,4 @@ $(eval $(call BuildPackage,olsrd-luci-mod-secure))
 $(eval $(call BuildPackage,olsrd-luci-mod-txtinfo))
 $(eval $(call BuildPackage,olsrd-luci-mod-quagga))
 $(eval $(call BuildPackage,olsrd-luci-mod-watchdog))
-#$(eval $(call BuildPackage,olsrd-luci-mod-mdns))
+$(eval $(call BuildPackage,olsrd-luci-mod-mdns))
