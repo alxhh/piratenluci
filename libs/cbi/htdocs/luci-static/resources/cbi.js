@@ -45,6 +45,11 @@ function cbi_d_checkvalue(target, ref) {
 
 	if (!t || !t.value) {
 		value = "";
+		t = document.getElementsByName(target);
+		for(var s in t){
+			if (s.selected){value = s.value;}
+		}
+
 	} else {
 		value = t.value;
 

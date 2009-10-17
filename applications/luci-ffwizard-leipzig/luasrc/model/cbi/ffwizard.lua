@@ -170,12 +170,17 @@ function crew.write(self, section, value)
 end
 
 
-hng = f:field(Flag, "gen_hostname", "Hostname automatisch generieren")
+hng = f:field(ListValue, "gen_hostname", "Hostname automatisch generieren")
+hng.size=3
+hng.widget="radio"
+hng:value("1", "Ja")
+hng:value("0", "Nein")
+
 
 hostn = f:field(Value, "hostname", "Hostname")
 hostn.rmempty=false
 hostn.optional=false
-hostn:depends("gen_hostname","")
+hostn:depends("gen_hostname","1")
 
 
 -------------------- Control --------------------
@@ -425,7 +430,6 @@ end
 
 -- Generic hostname
 function hng.write(self, section, value)
-
 	local node_ip = meship:formvalue(section) and ip.IPv4(meship:formvalue(section))
 	local new_hostname = uci:get("freifunk", "wizard", "hostname") or "Freifunk"
 
