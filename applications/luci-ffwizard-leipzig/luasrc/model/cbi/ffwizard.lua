@@ -180,7 +180,7 @@ hng:value("0", "Nein")
 hostn = f:field(Value, "hostname", "Hostname")
 hostn.rmempty=false
 hostn.optional=false
-hostn:depends("gen_hostname","1")
+hostn:depends("gen_hostname","0")
 
 
 -------------------- Control --------------------
