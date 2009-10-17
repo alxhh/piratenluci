@@ -46,8 +46,10 @@ function cbi_d_checkvalue(target, ref) {
 	if (!t || !t.value) {
 		value = "";
 		t = document.getElementsByName(target);
-		for(var s in t){
-			if (s.selected){value = s.value;}
+		for(var i=0; i<t.length; i++){
+			if (t[i].checked) {
+				value = t[i].value;
+			}
 		}
 
 	} else {
