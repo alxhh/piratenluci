@@ -1,4 +1,11 @@
 --[[
+This file has been modified by
+Andreas Pittrich <andreas.pittrich@web.de>
+in behalf of the german pirate party (Piratenpartei)
+www.piratenpartei.de
+
+Original Disclaimer:
+-------
 LuCI - Lua Configuration Interface
 
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -97,6 +104,7 @@ end
 olsr = f:field(Flag, "olsr", "OLSR einrichten")
 olsr.rmempty = true
 
+
 lat = f:field(Value, "lat", "Latitude")
 lat:depends("olsr", "1")
 function lat.cfgvalue(self, section)
@@ -106,6 +114,7 @@ function lat.write(self, section, value)
 	uci:set("freifunk", "wizard", "latitude", value)
 	uci:save("freifunk")
 end
+
 
 lon = f:field(Value, "lon", "Longitude")
 lon:depends("olsr", "1")
@@ -120,16 +129,54 @@ end
 share = f:field(Flag, "sharenet", "Eigenen Internetzugang freigeben")
 share.rmempty = true
 
+
 wansec = f:field(Flag, "wansec", "Mein Netzwerk vor Zugriff aus dem Freifunknetz schützen")
 wansec.rmempty = false
 wansec:depends("sharenet", "1")
 function wansec.cfgvalue(self, section)
-	return uci:get("freifunk", "wizard", "wan_security")
+	return uci:get("freifunk", "wizard", "wan_security") or "0"
 end
 function wansec.write(self, section, value)
 	uci:set("freifunk", "wizard", "wan_security", value)
 	uci:save("freifunk")
 end
+
+
+mail = f:field(Value, "mail", translate("ff_mail"))
+function mail.cfgvalue(self, section)
+	return uci:get("freifunk", "contact", "mail")
+end
+function mail.write(self, section, value)
+	uci:set("freifunk", "contact", "mail", value)
+	uci:save("freifunk")
+end
+
+lv = f:field(Value, "landesverband", "Landesverband")
+function lv.cfgvalue(self, section)
+	return uci:get("freifunk", "contact", "landesverband")
+end
+function lv.write(self, section, value)
+	uci:set("freifunk", "contact", "landesverband", value)
+	uci:save("freifunk")
+end
+
+crew = f:field(Value, "crew", "Crew")
+function crew.cfgvalue(self, section)
+	return uci:get("freifunk", "contact", "crew")
+end
+function crew.write(self, section, value)
+	uci:set("freifunk", "contact", "crew", value)
+	uci:save("freifunk")
+end
+
+
+hng = f:field(Flag, "gen_hostname", "Hostname automatisch generieren")
+
+hostn = f:field(Value, "hostname", "Hostname")
+hostn.rmempty=false
+hostn.optional=false
+hostn:depends("gen_hostname","")
+
 
 -------------------- Control --------------------
 function f.handle(self, state, data)
@@ -268,24 +315,6 @@ function main.write(self, section, value)
 	uci:save("network")
 
 	tools.firewall_zone_add_interface("freifunk", device)
-
-
-	local new_hostname = node_ip:string():gsub("%.", "-")
-	local old_hostname = sys.hostname()
-
-	uci:foreach("system", "system",
-		function(s)
-			-- Make crond silent
-			uci:set("system", s['.name'], "cronloglevel", "10")
-
-			-- Set hostname
-			if old_hostname == "OpenWrt" or old_hostname:match("^%d+-%d+-%d+-%d+$") then
-				uci:set("system", s['.name'], "hostname", new_hostname)
-				sys.hostname(new_hostname)
-			end
-		end)
-
-	uci:save("system")
 end
 
 
@@ -391,6 +420,52 @@ function share.write(self, section, value)
 	uci:save("firewall")
 	uci:save("olsrd")
 	uci:save("system")
+end
+
+
+-- Generic hostname
+function hng.write(self, section, value)
+
+	local node_ip = meship:formvalue(section) and ip.IPv4(meship:formvalue(section))
+	local new_hostname = uci:get("freifunk", "wizard", "hostname") or "Freifunk"
+
+	if node_ip then		
+		new_hostname = new_hostname.."("..node_ip:string():gsub("%.", "-")..")"
+	end
+
+	uci:foreach("system", "system",
+		function(s)
+			-- Make crond silent
+			uci:set("system", s['.name'], "cronloglevel", "10")
+
+			-- Set hostname
+			uci:set("system", s['.name'], "hostname", new_hostname)
+			sys.hostname(new_hostname)			
+		end)
+
+	uci:save("system")
+end
+
+-- Manual hostname
+function hostn.write (self, section, value)
+	if hng:formvalue(section)=="1" or value=="" then
+		if hng:formvalue(section)~="1" then 
+			hostn.tag_missing[section] = true
+			hng.tag_missing[section] = true
+		end
+		return
+	end
+	uci:foreach("system", "system",
+		function(s)
+			-- Make crond silent
+			uci:set("system", s['.name'], "cronloglevel", "10")
+
+			-- Set hostname
+			uci:set("system", s['.name'], "hostname", value)
+			sys.hostname(value)			
+		end)
+
+		uci:save("system")
 end
 
 
