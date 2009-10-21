@@ -5,9 +5,11 @@
 		var PI = Math.PI;
 		var latfield = '';
 		var lonfield = '';
-	    var centerlon = 10;
-	    var centerlat = 52;
-	    var zoom = 6;
+		var latfield_id='';
+		var lonfield_id='';
+	    	var centerlon = 10;
+	    	var centerlat = 52;
+	    	var zoom = 6;
 
 		function lon2merc(lon) {
 		    return 20037508.34 * lon / 180;
@@ -55,6 +57,16 @@
                     var lonlat = map.getLonLatFromViewPortPx(e.xy);	
 					lat=merc2lat(lonlat.lat);
 					lon=merc2lon(lonlat.lon);
+					if(parent.document.getElementById(latfield_id)==null){
+						latfield=document.getElementById('osmlat');
+					}else{
+						latfield=parent.document.getElementById(latfield_id);
+					}
+					if(parent.document.getElementById(lonfield_id)==null){
+						lonfield=document.getElementById('osmlon');
+					}else{
+						lonfield=parent.document.getElementById(lonfield_id);
+					}
 					latfield.value = lat;
 					lonfield.value = lon;								
 
@@ -66,17 +78,11 @@
 			var field = window.name.substring(0, window.name.lastIndexOf("."));
 
 			if(parent.document.getElementById(field+".latfield")!=null){
-				latfield_id = parent.document.getElementById(field+".latfield").value;					   
-				latfield = parent.document.getElementById(latfield_id);  
+				latfield_id = parent.document.getElementById(field+".latfield").value;	
 				document.getElementById('osm').style.display="none";
-			}else{
-				latfield = document.getElementById("osmlat");
 			}
 			if(parent.document.getElementById(field+".lonfield")!=null){
 				lonfield_id = parent.document.getElementById(field+".lonfield").value;
-				lonfield = parent.document.getElementById(lonfield_id);
-			}else{
-				lonfield = document.getElementById("osmlon");
 			}
 			if(parent.document.getElementById(field+".centerlat")!=null){
 				centerlat =parseFloat(parent.document.getElementById(field+".centerlat").value);
@@ -111,9 +117,8 @@
 
 		    layer_mapnik = new OpenLayers.Layer.OSM.Mapnik("Mapnik");
 
-		    map.addLayers([layer_mapnik]);			
-
-			var y =lat2merc(centerlat); 
+		    map.addLayers([layer_mapnik]);
+		    var y =lat2merc(centerlat); 
 		    var x =lon2merc(centerlon);
 
 		    map.setCenter(new OpenLayers.LonLat(x, y), zoom); 
