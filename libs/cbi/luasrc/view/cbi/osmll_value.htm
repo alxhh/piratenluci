@@ -1,0 +1,33 @@
+<%#
+cc-by-sa Andreas Pittrich <andreas.pittrich@web.de>
+in behalf of the german pirate party (Piratenpartei)
+www.piratenpartei.de
+
+$Id$
+
+-%>
+<%+cbi/valueheader%>
+
+		<% if self:cfgvalue(section) ~= false then %>
+			<% if self.latfield and self.lonfield then %>
+				<input type="hidden" <%= attr("value", string.format('cbid.%s.%s.%s', self.config, section, self.latfield))..attr("id", cbid..".latfield")..attr("name", cbid..".latfield")%>>
+				<input type="hidden" <%= attr("value", string.format('cbid.%s.%s.%s', self.config, section, self.lonfield))..attr("id", cbid..".lonfield")..attr("name", cbid..".lonfield")%>>
+			<% end %>
+			<input type="hidden" <%= attr("value", self.centerlat)..attr("id", cbid..".centerlat")..attr("name", cbid..".centerlat")%>>
+			<input type="hidden" <%= attr("value", self.centerlon)..attr("id", cbid..".centerlon")..attr("name", cbid..".centerlon")%>>
+			<input type="hidden" <%= attr("value", self.zoom)..attr("id", cbid..".zoom")..attr("name", cbid..".zoom")%>>
+		<% end %>
+	</div>
+	<div class="cbi-value-iframe">
+		<% if self.popup then %>
+			<input class="cbi-input-button" type="button""<%= attr("name", cbid..".button")..attr("id", cbid..".button")..attr("value", "OpenStreetMap")%> 
+					onclick="
+						popup=window.open('/luci-static/resources/OSMLatLon.htm', '<%=cbid%>.window', 'innerWidth=<%=self.popup_width%>, innerHeight=<%=self.popup_height%>, location=no, menubar=no, scrollbars=no, status=no, toolbar=no');
+						popup.focus();
+					"
+			/>		
+		<% else %>
+			<iframe src="/luci-static/resources/OSMLatLon.htm" <%= attr("id", cbid..".iframe")..attr("name", cbid..".iframe")..attr("width", self.iframe_width)..attr("height", self.iframe_height)%> frameborder="0" scrolling="no"></iframe>
+		<%end%>
+
+<%+cbi/valuefooter%>
