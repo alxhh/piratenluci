@@ -1765,3 +1765,23 @@ function FileBrowser.__init__(self, ...)
 	AbstractValue.__init__(self, ...)
 	self.template = "cbi/browser"
 end
+
+-- Opens an OpenStreetMap iframe or popup
+
+OpenStreetMapLonLat = class(AbstractValue)
+
+function OpenStreetMapLonLat.__init__(self, ...)
+	AbstractValue.__init__(self, ...)
+	self.template = "cbi/osmll_value"
+	self.latfield = nil
+	self.lonfield = nil
+	self.centerlat = "0"
+	self.centerlon = "0"
+	self.zoom = "0"
+	self.iframe_width = "100%"
+	self.iframe_height = "600"
+	self.popup_width = 800
+	self.popup_height = 600
+	self.popup = false
+end
+

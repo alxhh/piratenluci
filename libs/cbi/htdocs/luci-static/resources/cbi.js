@@ -45,6 +45,7 @@ function cbi_d_checkvalue(target, ref) {
 
 	if (!t || !t.value) {
 		value = "";
+		// for radio buttons
 		t = document.getElementsByName(target);
 		for(var i=0; i<t.length; i++){
 			if (t[i].checked) {

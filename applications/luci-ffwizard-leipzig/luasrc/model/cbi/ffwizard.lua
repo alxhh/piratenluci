@@ -105,7 +105,7 @@ olsr = f:field(Flag, "olsr", "OLSR einrichten")
 olsr.rmempty = true
 
 
-lat = f:field(Value, "lat", "Latitude")
+lat = f:field(Value, "lat", "Breitengrad")
 lat:depends("olsr", "1")
 function lat.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "latitude")
@@ -116,7 +116,7 @@ function lat.write(self, section, value)
 end
 
 
-lon = f:field(Value, "lon", "Longitude")
+lon = f:field(Value, "lon", "Längengrad")
 lon:depends("olsr", "1")
 function lon.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "longitude")
@@ -125,6 +125,16 @@ function lon.write(self, section, value)
 	uci:set("freifunk", "wizard", "longitude", value)
 	uci:save("freifunk")
 end
+
+osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten")
+osm.latfield = "lat"
+osm.lonfield = "lon"
+osm.centerlat = "52"
+osm.centerlon = "10"
+osm.iframe_width = "100%"
+osm.iframe_height = "600"
+osm.popup = true
+osm.zoom = "7"
 
 share = f:field(Flag, "sharenet", "Eigenen Internetzugang freigeben")
 share.rmempty = true
@@ -181,6 +191,7 @@ hostn = f:field(Value, "hostname", "Hostname")
 hostn.rmempty=false
 hostn.optional=false
 hostn:depends("gen_hostname","0")
+
 
 
 -------------------- Control --------------------
