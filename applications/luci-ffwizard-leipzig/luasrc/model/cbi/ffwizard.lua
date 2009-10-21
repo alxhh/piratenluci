@@ -133,7 +133,7 @@ osm.centerlat = "52"
 osm.centerlon = "10"
 osm.iframe_width = "100%"
 osm.iframe_height = "600"
-osm.popup = true
+osm.popup = false
 osm.zoom = "7"
 
 share = f:field(Flag, "sharenet", "Eigenen Internetzugang freigeben")
