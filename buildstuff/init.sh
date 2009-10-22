@@ -15,7 +15,7 @@ repo_packages=~/dev/openwrt/repos/packages/
 repo_809=~/dev/openwrt/repos/8.09/
 #get basic repos
 git clone $repo_packages||exit
-#git clone git://nbd.name/packages.git||exit
+#git clone git://nbd.name/packages_8.09.git||exit
 #git clone git://github.com/alxhh/piratenluci.git||exit
 git clone $repo_luci||exit
 
