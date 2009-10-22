@@ -148,6 +148,15 @@ config community seefeld
 	option splash_prefix "27"
 	option external freifunk_seefeld
 
+config 'community' 'duesseldorf'
+       option 'name' 'Freifunk Duesseldorf'
+       option 'homepage' 'http://wiki.piratenpartei.de/D%C3%BCsseldorf/Freifunk'
+       option 'ssid' 'duesseldorf.freifunk.net'
+       option 'mesh_network' '10.40.0.0/16'
+       option 'splash_network' '10.104.0.0/16'
+       option 'splash_prefix' '27'
+       option 'external' 'freifunk_duesseldorf'
+
 config community hannover
 	option name "Freifunk Hannover"
 	option homepage http://hannover.freifunk.net
