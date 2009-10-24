@@ -1,0 +1,324 @@
+diff -r 438bd63a1ab8 src/link_set.c
+--- a/src/link_set.c	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/link_set.c	Sat Oct 24 21:37:44 2009 +0200
+@@ -359,7 +359,6 @@
+   link->link_hello_timer = NULL;
+   olsr_stop_timer(link->link_loss_timer);
+   link->link_loss_timer = NULL;
+-
+   list_remove(&link->link_list);
+ 
+   free(link->if_name);
+@@ -388,6 +387,7 @@
+   OLSR_FOR_ALL_LINK_ENTRIES_END(link);
+ }
+ 
++
+ /**
+  * Callback for the link loss timer.
+  */
+@@ -405,6 +405,7 @@
+   olsr_change_timer(link->link_loss_timer, link->loss_helloint, OLSR_LINK_LOSS_JITTER, OLSR_TIMER_PERIODIC);
+ }
+ 
++
+ /**
+  * Callback for the link SYM timer.
+  */
+@@ -564,7 +565,6 @@
+     olsr_set_timer(&new_link->link_loss_timer, htime + htime / 2, OLSR_LINK_LOSS_JITTER, OLSR_TIMER_PERIODIC,
+                    &olsr_expire_link_loss_timer, new_link, 0);
+ 
+-
+     set_loss_link_multiplier(new_link);
+   }
+ 
+@@ -803,7 +803,7 @@
+ }
+ 
+ void
+-olsr_update_packet_loss(struct link_entry *entry)
++olsr_received_hello_handler(struct link_entry *entry)
+ {
+   olsr_update_packet_loss_worker(entry, false);
+ 
+diff -r 438bd63a1ab8 src/link_set.h
+--- a/src/link_set.h	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/link_set.h	Sat Oct 24 21:37:44 2009 +0200
+@@ -123,7 +123,6 @@
+ void olsr_init_link_set(void);
+ void olsr_delete_link_entry_by_ip(const union olsr_ip_addr *);
+ void olsr_expire_link_hello_timer(void *);
+-void olsr_update_packet_loss_worker(struct link_entry *, bool);
+ void signal_link_changes(bool);        /* XXX ugly */
+ 
+ struct link_entry *get_best_link_to_neighbor(const union olsr_ip_addr *);
+@@ -137,7 +136,7 @@
+ int replace_neighbor_link_set(const struct neighbor_entry *, struct neighbor_entry *);
+ int lookup_link_status(const struct link_entry *);
+ void olsr_update_packet_loss_hello_int(struct link_entry *, olsr_reltime);
+-void olsr_update_packet_loss(struct link_entry *entry);
++void olsr_received_hello_handler(struct link_entry *entry);
+ void olsr_print_link_set(void);
+ 
+ #endif
+diff -r 438bd63a1ab8 src/lq_plugin.c
+--- a/src/lq_plugin.c	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/lq_plugin.c	Sat Oct 24 21:37:44 2009 +0200
+@@ -220,19 +220,6 @@
+   olsr_linkcost lq;
+   assert((const char *)entry + sizeof(*entry) >= (const char *)entry->linkquality);
+   lq = active_lq_handler->packet_loss_handler(entry, entry->linkquality, lost);
+-
+-  entry->linkcost = lq;
+-
+-  if (olsr_cnf->lq_dlimit > 0) {
+-    changes_neighborhood = true;
+-    changes_topology = true;
+-  }
+-  else {
+-    OLSR_PRINTF(3, "Skipping Dijkstra (1)\n");
+-  }
+-
+-  /* XXX - we should check whether we actually announce this neighbour */
+-  signal_link_changes(true);
+ }
+ 
+ /*
+@@ -337,7 +324,7 @@
+ {
+   assert((const char *)target + sizeof(*target) >= (const char *)target->linkquality);
+   assert((const char *)source + sizeof(*source) >= (const char *)source->linkquality);
+-  memcpy(target->linkquality, source->linkquality, active_lq_handler->hello_lq_size);
++  active_lq_handler->copy_link_lq_into_neigh(target->linkquality, source->linkquality);
+ }
+ 
+ /*
+@@ -476,6 +463,26 @@
+   return h;
+ }
+ 
++/**
++ * This function should be called whenever the current linkcost
++ * value changed in a relevant way.
++ *
++ * @param link pointer to current link
++ * @param newcost new cost of this link
++ */
++void olsr_relevant_linkcost_change(void) {
++  if (olsr_cnf->lq_dlimit > 0) {
++    changes_neighborhood = true;
++    changes_topology = true;
++  }
++  else {
++    OLSR_PRINTF(3, "Skipping Dijkstra (1)\n");
++  }
++
++  /* XXX - we should check whether we actually announce this neighbour */
++  signal_link_changes(true);
++}
++
+ /*
+  * Local Variables:
+  * c-basic-offset: 2
+diff -r 438bd63a1ab8 src/lq_plugin.h
+--- a/src/lq_plugin.h	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/lq_plugin.h	Sat Oct 24 21:37:44 2009 +0200
+@@ -72,6 +72,7 @@
+     olsr_linkcost(*packet_loss_handler) (struct link_entry * entry, void *lq, bool lost);
+ 
+   void (*memorize_foreign_hello) (void *local, void *foreign);
++  void (*copy_link_lq_into_neigh) (void *target, void *source);
+   void (*copy_link_lq_into_tc) (void *target, void *source);
+   void (*clear_hello) (void *target);
+   void (*clear_tc) (void *target);
+@@ -136,6 +137,8 @@
+ struct lq_hello_neighbor *olsr_malloc_lq_hello_neighbor(const char *id);
+ struct link_entry *olsr_malloc_link_entry(const char *id);
+ 
++void olsr_relevant_linkcost_change(void);
++
+ /* Externals. */
+ extern struct lq_handler *active_lq_handler;
+ 
+diff -r 438bd63a1ab8 src/lq_plugin_default_ff.c
+--- a/src/lq_plugin_default_ff.c	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/lq_plugin_default_ff.c	Sat Oct 24 21:37:44 2009 +0200
+@@ -62,6 +62,7 @@
+   &default_lq_packet_loss_worker_ff,
+ 
+   &default_lq_memorize_foreign_hello_ff,
++  &default_lq_copy_link2neigh_ff,
+   &default_lq_copy_link2tc_ff,
+   &default_lq_clear_ff_hello,
+   &default_lq_clear_ff,
+@@ -79,6 +80,55 @@
+   sizeof(struct default_lq_ff)
+ };
+ 
++static void default_lq_ff_handle_lqchange(struct link_entry *link) {
++  struct default_lq_ff_hello *lq;
++  struct ipaddr_str buf;
++  struct link_entry *lnk;
++
++  bool relevant = false;
++  lq = (struct default_lq_ff_hello *)link->linkquality;
++
++#if 0
++  fprintf(stderr, "%s: old = %u/%u   new = %u/%u\n", olsr_ip_to_string(&buf, &link->neighbor_iface_addr),
++      lq->smoothed_lq.valueLq, lq->smoothed_lq.valueNlq,
++      lq->lq.valueLq, lq->lq.valueNlq);
++#endif
++
++  if (lq->smoothed_lq.valueLq < lq->lq.valueLq) {
++    if (lq->lq.valueLq == 255 || lq->lq.valueLq - lq->smoothed_lq.valueLq > lq->smoothed_lq.valueLq/10) {
++      relevant = true;
++    }
++  }
++  else if (lq->smoothed_lq.valueLq > lq->lq.valueLq) {
++    if (lq->smoothed_lq.valueLq - lq->lq.valueLq > lq->smoothed_lq.valueLq/10) {
++      relevant = true;
++    }
++  }
++  if (lq->smoothed_lq.valueNlq < lq->lq.valueNlq) {
++    if (lq->lq.valueNlq == 255 || lq->lq.valueNlq - lq->smoothed_lq.valueNlq > lq->smoothed_lq.valueNlq/10) {
++      relevant = true;
++    }
++  }
++  else if (lq->smoothed_lq.valueNlq > lq->lq.valueNlq) {
++    if (lq->smoothed_lq.valueNlq - lq->lq.valueNlq > lq->smoothed_lq.valueNlq/10) {
++      relevant = true;
++    }
++  }
++
++  if (!relevant) {
++    return;
++  }
++
++  OLSR_FOR_ALL_LINK_ENTRIES(lnk) {
++    lq = (struct default_lq_ff_hello *)lnk->linkquality;
++    if (lnk == link || lq->smoothed_lq.valueLq != 255 || lq->smoothed_lq.valueNlq != 255) {
++      lq->smoothed_lq = lq->lq;
++      lnk->linkcost = default_lq_calc_cost_ff(&lq->smoothed_lq);
++    }
++  } OLSR_FOR_ALL_LINK_ENTRIES_END(lnk)
++  olsr_relevant_linkcost_change();
++}
++
+ static void
+ default_lq_parser_ff(struct olsr *olsr, struct interface *in_if, union olsr_ip_addr *from_addr)
+ {
+@@ -128,6 +178,7 @@
+ default_lq_ff_timer(void __attribute__ ((unused)) * context)
+ {
+   struct link_entry *link;
++
+   OLSR_FOR_ALL_LINK_ENTRIES(link) {
+     struct default_lq_ff_hello *tlq = (struct default_lq_ff_hello *)link->linkquality;
+     fpm ratio;
+@@ -171,7 +222,7 @@
+ 
+       tlq->lq.valueLq = (uint8_t) (fpmtoi(ratio));
+     }
+-    link->linkcost = default_lq_calc_cost_ff(tlq);
++    default_lq_ff_handle_lqchange(link);
+ 
+     // shift buffer
+     tlq->activePtr = (tlq->activePtr + 1) % LQ_FF_WINDOW;
+@@ -267,20 +318,30 @@
+ void
+ default_lq_memorize_foreign_hello_ff(void *ptrLocal, void *ptrForeign)
+ {
+-  struct default_lq_ff *local = ptrLocal;
++  struct default_lq_ff_hello *local = ptrLocal;
+   struct default_lq_ff *foreign = ptrForeign;
+ 
+   if (foreign) {
+-    local->valueNlq = foreign->valueLq;
++    local->lq.valueNlq = foreign->valueLq;
+   } else {
+-    local->valueNlq = 0;
++    local->lq.valueNlq = 0;
+   }
+ }
+ 
+ void
+-default_lq_copy_link2tc_ff(void *target, void *source)
++default_lq_copy_link2neigh_ff(void *t, void *s)
+ {
+-  memcpy(target, source, sizeof(struct default_lq_ff));
++  struct default_lq_ff *target = t;
++  struct default_lq_ff_hello *source = s;
++  *target = source->smoothed_lq;
++}
++
++void
++default_lq_copy_link2tc_ff(void *t, void *s)
++{
++  struct default_lq_ff *target = t;
++  struct default_lq_ff_hello *source = s;
++  *target = source->smoothed_lq;
+ }
+ 
+ void
+@@ -296,6 +357,7 @@
+   int i;
+ 
+   default_lq_clear_ff(&local->lq);
++  default_lq_clear_ff(&local->smoothed_lq);
+   local->windowSize = LQ_FF_QUICKSTART_INIT;
+   for (i = 0; i < LQ_FF_WINDOW; i++) {
+     local->total[i] = 3;
+diff -r 438bd63a1ab8 src/lq_plugin_default_ff.h
+--- a/src/lq_plugin_default_ff.h	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/lq_plugin_default_ff.h	Sat Oct 24 21:37:44 2009 +0200
+@@ -59,6 +59,7 @@
+ };
+ 
+ struct default_lq_ff_hello {
++  struct default_lq_ff smoothed_lq;
+   struct default_lq_ff lq;
+   uint8_t windowSize, activePtr;
+   uint16_t last_seq_nr;
+@@ -78,6 +79,7 @@
+ int default_lq_serialize_tc_lq_pair_ff(unsigned char *buff, void *lq);
+ void default_lq_deserialize_tc_lq_pair_ff(const uint8_t ** curr, void *lq);
+ 
++void default_lq_copy_link2neigh_ff(void *t, void *s);
+ void default_lq_copy_link2tc_ff(void *target, void *source);
+ void default_lq_clear_ff(void *target);
+ void default_lq_clear_ff_hello(void *target);
+diff -r 438bd63a1ab8 src/lq_plugin_default_float.c
+--- a/src/lq_plugin_default_float.c	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/lq_plugin_default_float.c	Sat Oct 24 21:37:44 2009 +0200
+@@ -57,6 +57,7 @@
+   &default_lq_packet_loss_worker_float,
+   &default_lq_memorize_foreign_hello_float,
+   &default_lq_copy_link2tc_float,
++  &default_lq_copy_link2tc_float,
+   &default_lq_clear_float,
+   &default_lq_clear_float,
+ 
+diff -r 438bd63a1ab8 src/lq_plugin_default_fpm.c
+--- a/src/lq_plugin_default_fpm.c	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/lq_plugin_default_fpm.c	Sat Oct 24 21:37:44 2009 +0200
+@@ -58,6 +58,7 @@
+   &default_lq_packet_loss_worker_fpm,
+   &default_lq_memorize_foreign_hello_fpm,
+   &default_lq_copy_link2tc_fpm,
++  &default_lq_copy_link2tc_fpm,
+   &default_lq_clear_fpm,
+   &default_lq_clear_fpm,
+ 
+diff -r 438bd63a1ab8 src/process_package.c
+--- a/src/process_package.c	Fri Oct 16 17:18:44 2009 +0200
++++ b/src/process_package.c	Sat Oct 24 21:37:44 2009 +0200
+@@ -440,7 +440,7 @@
+     olsr_memorize_foreign_hello_lq(lnk, walker);
+ 
+     /* update packet loss for link quality calculation */
+-    olsr_update_packet_loss(lnk);
++    olsr_received_hello_handler(lnk);
+   }
+ 
+   neighbor = lnk->neighbor;
