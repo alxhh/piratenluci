@@ -1,6 +1,6 @@
-diff -r 438bd63a1ab8 src/link_set.c
---- a/src/link_set.c	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/link_set.c	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/link_set.c
+--- a/src/link_set.c	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/link_set.c	Sun Oct 25 13:16:58 2009 +0100
 @@ -359,7 +359,6 @@
    link->link_hello_timer = NULL;
    olsr_stop_timer(link->link_loss_timer);
@@ -42,9 +42,9 @@ diff -r 438bd63a1ab8 src/link_set.c
  {
    olsr_update_packet_loss_worker(entry, false);
  
-diff -r 438bd63a1ab8 src/link_set.h
---- a/src/link_set.h	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/link_set.h	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/link_set.h
+--- a/src/link_set.h	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/link_set.h	Sun Oct 25 13:16:58 2009 +0100
 @@ -123,7 +123,6 @@
  void olsr_init_link_set(void);
  void olsr_delete_link_entry_by_ip(const union olsr_ip_addr *);
@@ -62,9 +62,9 @@ diff -r 438bd63a1ab8 src/link_set.h
  void olsr_print_link_set(void);
  
  #endif
-diff -r 438bd63a1ab8 src/lq_plugin.c
---- a/src/lq_plugin.c	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/lq_plugin.c	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/lq_plugin.c
+--- a/src/lq_plugin.c	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/lq_plugin.c	Sun Oct 25 13:16:58 2009 +0100
 @@ -220,19 +220,6 @@
    olsr_linkcost lq;
    assert((const char *)entry + sizeof(*entry) >= (const char *)entry->linkquality);
@@ -121,9 +121,9 @@ diff -r 438bd63a1ab8 src/lq_plugin.c
  /*
   * Local Variables:
   * c-basic-offset: 2
-diff -r 438bd63a1ab8 src/lq_plugin.h
---- a/src/lq_plugin.h	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/lq_plugin.h	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/lq_plugin.h
+--- a/src/lq_plugin.h	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/lq_plugin.h	Sun Oct 25 13:16:58 2009 +0100
 @@ -72,6 +72,7 @@
      olsr_linkcost(*packet_loss_handler) (struct link_entry * entry, void *lq, bool lost);
  
@@ -141,9 +141,9 @@ diff -r 438bd63a1ab8 src/lq_plugin.h
  /* Externals. */
  extern struct lq_handler *active_lq_handler;
  
-diff -r 438bd63a1ab8 src/lq_plugin_default_ff.c
---- a/src/lq_plugin_default_ff.c	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/lq_plugin_default_ff.c	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/lq_plugin_default_ff.c
+--- a/src/lq_plugin_default_ff.c	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/lq_plugin_default_ff.c	Sun Oct 25 13:16:58 2009 +0100
 @@ -62,6 +62,7 @@
    &default_lq_packet_loss_worker_ff,
  
@@ -152,17 +152,20 @@ diff -r 438bd63a1ab8 src/lq_plugin_default_ff.c
    &default_lq_copy_link2tc_ff,
    &default_lq_clear_ff_hello,
    &default_lq_clear_ff,
-@@ -79,6 +80,55 @@
-   sizeof(struct default_lq_ff)
+@@ -80,6 +81,74 @@
  };
  
-+static void default_lq_ff_handle_lqchange(struct link_entry *link) {
+ static void
++default_lq_ff_handle_lqchange(void) {
 +  struct default_lq_ff_hello *lq;
 +  struct ipaddr_str buf;
-+  struct link_entry *lnk;
++  struct link_entry *link;
 +
-+  bool relevant = false;
-+  lq = (struct default_lq_ff_hello *)link->linkquality;
++  bool triggered = false;
++
++  OLSR_FOR_ALL_LINK_ENTRIES(link) {
++    bool relevant = false;
++    lq = (struct default_lq_ff_hello *)link->linkquality;
 +
 +#if 0
 +  fprintf(stderr, "%s: old = %u/%u   new = %u/%u\n", olsr_ip_to_string(&buf, &link->neighbor_iface_addr),
@@ -170,45 +173,61 @@ diff -r 438bd63a1ab8 src/lq_plugin_default_ff.c
 +      lq->lq.valueLq, lq->lq.valueNlq);
 +#endif
 +
-+  if (lq->smoothed_lq.valueLq < lq->lq.valueLq) {
-+    if (lq->lq.valueLq == 255 || lq->lq.valueLq - lq->smoothed_lq.valueLq > lq->smoothed_lq.valueLq/10) {
-+      relevant = true;
++    if (lq->smoothed_lq.valueLq < lq->lq.valueLq) {
++      if (lq->lq.valueLq == 255 || lq->lq.valueLq - lq->smoothed_lq.valueLq > lq->smoothed_lq.valueLq/10) {
++        relevant = true;
++      }
 +    }
-+  }
-+  else if (lq->smoothed_lq.valueLq > lq->lq.valueLq) {
-+    if (lq->smoothed_lq.valueLq - lq->lq.valueLq > lq->smoothed_lq.valueLq/10) {
-+      relevant = true;
++    else if (lq->smoothed_lq.valueLq > lq->lq.valueLq) {
++      if (lq->smoothed_lq.valueLq - lq->lq.valueLq > lq->smoothed_lq.valueLq/10) {
++        relevant = true;
++      }
 +    }
-+  }
-+  if (lq->smoothed_lq.valueNlq < lq->lq.valueNlq) {
-+    if (lq->lq.valueNlq == 255 || lq->lq.valueNlq - lq->smoothed_lq.valueNlq > lq->smoothed_lq.valueNlq/10) {
-+      relevant = true;
++    if (lq->smoothed_lq.valueNlq < lq->lq.valueNlq) {
++      if (lq->lq.valueNlq == 255 || lq->lq.valueNlq - lq->smoothed_lq.valueNlq > lq->smoothed_lq.valueNlq/10) {
++        relevant = true;
++      }
 +    }
-+  }
-+  else if (lq->smoothed_lq.valueNlq > lq->lq.valueNlq) {
-+    if (lq->smoothed_lq.valueNlq - lq->lq.valueNlq > lq->smoothed_lq.valueNlq/10) {
-+      relevant = true;
++    else if (lq->smoothed_lq.valueNlq > lq->lq.valueNlq) {
++      if (lq->smoothed_lq.valueNlq - lq->lq.valueNlq > lq->smoothed_lq.valueNlq/10) {
++        relevant = true;
++      }
 +    }
-+  }
 +
-+  if (!relevant) {
++    if (relevant) {
++      memcpy(&lq->smoothed_lq, &lq->lq, sizeof(struct default_lq_ff));
++      link->linkcost = default_lq_calc_cost_ff(&lq->smoothed_lq);
++      triggered = true;
++    }
++  } OLSR_FOR_ALL_LINK_ENTRIES_END(link)
++
++  if (!triggered) {
 +    return;
 +  }
 +
-+  OLSR_FOR_ALL_LINK_ENTRIES(lnk) {
-+    lq = (struct default_lq_ff_hello *)lnk->linkquality;
-+    if (lnk == link || lq->smoothed_lq.valueLq != 255 || lq->smoothed_lq.valueNlq != 255) {
-+      lq->smoothed_lq = lq->lq;
-+      lnk->linkcost = default_lq_calc_cost_ff(&lq->smoothed_lq);
++  OLSR_FOR_ALL_LINK_ENTRIES(link) {
++    lq = (struct default_lq_ff_hello *)link->linkquality;
++
++    if (lq->smoothed_lq.valueLq == 255 && lq->smoothed_lq.valueNlq == 255) {
++      continue;
 +    }
-+  } OLSR_FOR_ALL_LINK_ENTRIES_END(lnk)
++
++    if (lq->smoothed_lq.valueLq == lq->lq.valueLq && lq->smoothed_lq.valueNlq == lq->lq.valueNlq) {
++      continue;
++    }
++
++    memcpy(&lq->smoothed_lq, &lq->lq, sizeof(struct default_lq_ff));
++    link->linkcost = default_lq_calc_cost_ff(&lq->smoothed_lq);
++  } OLSR_FOR_ALL_LINK_ENTRIES_END(link)
++
 +  olsr_relevant_linkcost_change();
 +}
 +
- static void
++static void
  default_lq_parser_ff(struct olsr *olsr, struct interface *in_if, union olsr_ip_addr *from_addr)
  {
-@@ -128,6 +178,7 @@
+   const union olsr_ip_addr *main_addr;
+@@ -128,6 +197,7 @@
  default_lq_ff_timer(void __attribute__ ((unused)) * context)
  {
    struct link_entry *link;
@@ -216,16 +235,23 @@ diff -r 438bd63a1ab8 src/lq_plugin_default_ff.c
    OLSR_FOR_ALL_LINK_ENTRIES(link) {
      struct default_lq_ff_hello *tlq = (struct default_lq_ff_hello *)link->linkquality;
      fpm ratio;
-@@ -171,7 +222,7 @@
+@@ -171,13 +241,14 @@
  
        tlq->lq.valueLq = (uint8_t) (fpmtoi(ratio));
      }
 -    link->linkcost = default_lq_calc_cost_ff(tlq);
-+    default_lq_ff_handle_lqchange(link);
  
      // shift buffer
      tlq->activePtr = (tlq->activePtr + 1) % LQ_FF_WINDOW;
-@@ -267,20 +318,30 @@
+     tlq->total[tlq->activePtr] = 0;
+     tlq->received[tlq->activePtr] = 0;
+   } OLSR_FOR_ALL_LINK_ENTRIES_END(link);
++
++  default_lq_ff_handle_lqchange();
+ }
+ 
+ void
+@@ -267,20 +338,30 @@
  void
  default_lq_memorize_foreign_hello_ff(void *ptrLocal, void *ptrForeign)
  {
@@ -261,7 +287,7 @@ diff -r 438bd63a1ab8 src/lq_plugin_default_ff.c
  }
  
  void
-@@ -296,6 +357,7 @@
+@@ -296,6 +377,7 @@
    int i;
  
    default_lq_clear_ff(&local->lq);
@@ -269,9 +295,9 @@ diff -r 438bd63a1ab8 src/lq_plugin_default_ff.c
    local->windowSize = LQ_FF_QUICKSTART_INIT;
    for (i = 0; i < LQ_FF_WINDOW; i++) {
      local->total[i] = 3;
-diff -r 438bd63a1ab8 src/lq_plugin_default_ff.h
---- a/src/lq_plugin_default_ff.h	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/lq_plugin_default_ff.h	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/lq_plugin_default_ff.h
+--- a/src/lq_plugin_default_ff.h	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/lq_plugin_default_ff.h	Sun Oct 25 13:16:58 2009 +0100
 @@ -59,6 +59,7 @@
  };
  
@@ -288,9 +314,9 @@ diff -r 438bd63a1ab8 src/lq_plugin_default_ff.h
  void default_lq_copy_link2tc_ff(void *target, void *source);
  void default_lq_clear_ff(void *target);
  void default_lq_clear_ff_hello(void *target);
-diff -r 438bd63a1ab8 src/lq_plugin_default_float.c
---- a/src/lq_plugin_default_float.c	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/lq_plugin_default_float.c	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/lq_plugin_default_float.c
+--- a/src/lq_plugin_default_float.c	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/lq_plugin_default_float.c	Sun Oct 25 13:16:58 2009 +0100
 @@ -57,6 +57,7 @@
    &default_lq_packet_loss_worker_float,
    &default_lq_memorize_foreign_hello_float,
@@ -299,9 +325,9 @@ diff -r 438bd63a1ab8 src/lq_plugin_default_float.c
    &default_lq_clear_float,
    &default_lq_clear_float,
  
-diff -r 438bd63a1ab8 src/lq_plugin_default_fpm.c
---- a/src/lq_plugin_default_fpm.c	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/lq_plugin_default_fpm.c	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/lq_plugin_default_fpm.c
+--- a/src/lq_plugin_default_fpm.c	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/lq_plugin_default_fpm.c	Sun Oct 25 13:16:58 2009 +0100
 @@ -58,6 +58,7 @@
    &default_lq_packet_loss_worker_fpm,
    &default_lq_memorize_foreign_hello_fpm,
@@ -310,9 +336,9 @@ diff -r 438bd63a1ab8 src/lq_plugin_default_fpm.c
    &default_lq_clear_fpm,
    &default_lq_clear_fpm,
  
-diff -r 438bd63a1ab8 src/process_package.c
---- a/src/process_package.c	Fri Oct 16 17:18:44 2009 +0200
-+++ b/src/process_package.c	Sat Oct 24 21:37:44 2009 +0200
+diff -r 23c6e26930a3 src/process_package.c
+--- a/src/process_package.c	Sun Oct 25 09:50:23 2009 +0100
++++ b/src/process_package.c	Sun Oct 25 13:16:58 2009 +0100
 @@ -440,7 +440,7 @@
      olsr_memorize_foreign_hello_lq(lnk, walker);
  
