@@ -74,7 +74,7 @@
 
             });
 
-		function init(){
+		function init(){			
 			var field = window.name.substring(0, window.name.lastIndexOf("."));
 
 			if(parent.document.getElementById(field+".latfield")!=null){

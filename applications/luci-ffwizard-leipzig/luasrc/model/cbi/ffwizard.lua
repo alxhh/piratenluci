@@ -126,15 +126,18 @@ function lon.write(self, section, value)
 	uci:save("freifunk")
 end
 
-osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten")
+osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten mit OpenStreetMap ermitteln")
+osm:depends("olsr", "1")
 osm.latfield = "lat"
 osm.lonfield = "lon"
 osm.centerlat = "52"
 osm.centerlon = "10"
-osm.iframe_width = "100%"
-osm.iframe_height = "600"
+osm.width = "100%"
+osm.height = "600"
 osm.popup = false
 osm.zoom = "7"
+osm.displaytext="OpenStreetap anzeigen"
+osm.hidetext="OpenStreetMap verbergen"
 
 share = f:field(Flag, "sharenet", "Eigenen Internetzugang freigeben")
 share.rmempty = true
@@ -181,7 +184,7 @@ end
 
 
 hng = f:field(ListValue, "gen_hostname", "Hostname automatisch generieren")
-hng.size=3
+hng.size=0
 hng.widget="radio"
 hng:value("1", "Ja")
 hng:value("0", "Nein")
