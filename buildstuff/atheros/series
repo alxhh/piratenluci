@@ -1,2 +1,2 @@
-backport-lua-rev5,patch
+backport-lua-rev6,patch
 ff-combined-image.patch -p0
