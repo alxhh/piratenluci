@@ -62,9 +62,13 @@ uci:foreach("wireless", "wifi-device",
 	end)
 
 
-main = f:field(Flag, "wifi", "Freifunkzugang einrichten")
+main = f:field(ListValue, "wifi", "Freifunkzugang einrichten?")
+main.size=0
+main.widget="radio"
+main:value("1", "Ja")
+main:value("0", "Nein")
 
-net = f:field(Value, "net", "Freifunk Community", "Mesh Netzbereich")
+net = f:field(Value, "net", "Freifunk Community", "Mesh Netzbereich:")
 net.rmempty = true
 net:depends("wifi", "1")
 uci:foreach("freifunk", "community", function(s)
@@ -79,7 +83,7 @@ function net.write(self, section, value)
 	uci:save("freifunk")
 end
 
-meship = f:field(Value, "meship", "Mesh IP Adresse", "Netzweit eindeutige Identifikation")
+meship = f:field(Value, "meship", "Mesh IP Adresse", "Netzweit eindeutige Identifikation:")
 meship.rmempty = true
 meship:depends("wifi", "1")
 function meship.cfgvalue(self, section)
@@ -94,18 +98,26 @@ function meship.validate(self, value)
 	return ( x and x:prefix() == 32 ) and x:string() or ""
 end
 
-client = f:field(Flag, "client", "WLAN-DHCP anbieten")
+client = f:field(ListValue, "client", "WLAN-DHCP anbieten?")
 client:depends("wifi", "1")
+client.size=0
+client.widget="radio"
+client:value("1", "Ja")
+client:value("0", "Nein")
 client.rmempty = false
 function client.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "dhcp_splash") or "0"
 end
 
-olsr = f:field(Flag, "olsr", "OLSR einrichten")
+olsr = f:field(ListValue, "olsr", "OLSR einrichten?")
 olsr.rmempty = true
+olsr.size=0
+olsr.widget="radio"
+olsr:value("1", "Ja")
+olsr:value("0", "Nein")
 
 
-lat = f:field(Value, "lat", "Breitengrad")
+lat = f:field(Value, "lat", "Breitengrad:")
 lat:depends("olsr", "1")
 function lat.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "latitude")
@@ -116,7 +128,7 @@ function lat.write(self, section, value)
 end
 
 
-lon = f:field(Value, "lon", "Längengrad")
+lon = f:field(Value, "lon", "Längengrad:")
 lon:depends("olsr", "1")
 function lon.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "longitude")
@@ -126,7 +138,7 @@ function lon.write(self, section, value)
 	uci:save("freifunk")
 end
 
-osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten mit OpenStreetMap ermitteln")
+osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten mit OpenStreetMap ermitteln:")
 osm:depends("olsr", "1")
 osm.latfield = "lat"
 osm.lonfield = "lon"
@@ -139,13 +151,22 @@ osm.zoom = "7"
 osm.displaytext="OpenStreetap anzeigen"
 osm.hidetext="OpenStreetMap verbergen"
 
-share = f:field(Flag, "sharenet", "Eigenen Internetzugang freigeben")
+share = f:field(ListValue, "sharenet", "Eigenen Internetzugang freigeben?")
 share.rmempty = true
+share.size=0
+share.widget="radio"
+share:value("1", "Ja")
+share:value("0", "Nein")
 
 
-wansec = f:field(Flag, "wansec", "Mein Netzwerk vor Zugriff aus dem Freifunknetz schützen")
+wansec = f:field(ListValue, "wansec", "Mein Netzwerk vor Zugriff aus dem Freifunknetz schützen?")
 wansec.rmempty = false
 wansec:depends("sharenet", "1")
+wansec.size=0
+wansec.widget="radio"
+wansec:value("1", "Ja")
+wansec:value("0", "Nein")
+
 function wansec.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "wan_security") or "0"
 end
@@ -164,7 +185,7 @@ function mail.write(self, section, value)
 	uci:save("freifunk")
 end
 
-lv = f:field(Value, "landesverband", "Landesverband")
+lv = f:field(Value, "landesverband", "Landesverband:")
 function lv.cfgvalue(self, section)
 	return uci:get("freifunk", "contact", "landesverband")
 end
@@ -173,7 +194,7 @@ function lv.write(self, section, value)
 	uci:save("freifunk")
 end
 
-crew = f:field(Value, "crew", "Crew")
+crew = f:field(Value, "crew", "Crew:")
 function crew.cfgvalue(self, section)
 	return uci:get("freifunk", "contact", "crew")
 end
@@ -183,7 +204,7 @@ function crew.write(self, section, value)
 end
 
 
-hng = f:field(ListValue, "gen_hostname", "Hostname automatisch generieren")
+hng = f:field(ListValue, "gen_hostname", "Hostname automatisch generieren?")
 hng.size=0
 hng.widget="radio"
 hng:value("1", "Ja")
