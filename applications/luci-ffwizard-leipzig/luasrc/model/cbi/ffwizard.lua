@@ -67,6 +67,11 @@ main.size=0
 main.widget="radio"
 main:value("1", "Ja")
 main:value("0", "Nein")
+function main.cfgvalue(self, section)
+	return "0"
+end
+
+
 
 net = f:field(Value, "net", "Freifunk Community", "Mesh Netzbereich:")
 net.rmempty = true
@@ -83,6 +88,9 @@ function net.write(self, section, value)
 	uci:save("freifunk")
 end
 
+
+
+
 meship = f:field(Value, "meship", "Mesh IP Adresse", "Netzweit eindeutige Identifikation:")
 meship.rmempty = true
 meship:depends("wifi", "1")
@@ -98,27 +106,37 @@ function meship.validate(self, value)
 	return ( x and x:prefix() == 32 ) and x:string() or ""
 end
 
+
+
+
 client = f:field(ListValue, "client", "WLAN-DHCP anbieten?")
 client:depends("wifi", "1")
 client.size=0
 client.widget="radio"
 client:value("1", "Ja")
 client:value("0", "Nein")
-client.rmempty = false
 function client.cfgvalue(self, section)
-	return uci:get("freifunk", "wizard", "dhcp_splash") or "0"
+	return "0"
 end
 
+
+
+
 olsr = f:field(ListValue, "olsr", "OLSR einrichten?")
-olsr.rmempty = true
 olsr.size=0
 olsr.widget="radio"
 olsr:value("1", "Ja")
 olsr:value("0", "Nein")
+function olsr.cfgvalue(self, section)
+	return "0"
+end
+
+
 
 
 lat = f:field(Value, "lat", "Breitengrad:")
 lat:depends("olsr", "1")
+lat.rmempty = true
 function lat.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "latitude")
 end
@@ -128,7 +146,11 @@ function lat.write(self, section, value)
 end
 
 
+
+
+
 lon = f:field(Value, "lon", "Längengrad:")
+lon.rmempty=true
 lon:depends("olsr", "1")
 function lon.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "longitude")
@@ -137,6 +159,9 @@ function lon.write(self, section, value)
 	uci:set("freifunk", "wizard", "longitude", value)
 	uci:save("freifunk")
 end
+
+
+
 
 osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten mit OpenStreetMap ermitteln:")
 osm:depends("olsr", "1")
@@ -151,16 +176,20 @@ osm.zoom = "7"
 osm.displaytext="OpenStreetap anzeigen"
 osm.hidetext="OpenStreetMap verbergen"
 
+
+
+
 share = f:field(ListValue, "sharenet", "Eigenen Internetzugang freigeben?")
-share.rmempty = true
 share.size=0
 share.widget="radio"
 share:value("1", "Ja")
 share:value("0", "Nein")
+function share.cfgvalue(self, section)
+	return "0"
+end
 
 
 wansec = f:field(ListValue, "wansec", "Mein Netzwerk vor Zugriff aus dem Freifunknetz schützen?")
-wansec.rmempty = false
 wansec:depends("sharenet", "1")
 wansec.size=0
 wansec.widget="radio"
@@ -168,7 +197,7 @@ wansec:value("1", "Ja")
 wansec:value("0", "Nein")
 
 function wansec.cfgvalue(self, section)
-	return uci:get("freifunk", "wizard", "wan_security") or "0"
+	return "0"
 end
 function wansec.write(self, section, value)
 	uci:set("freifunk", "wizard", "wan_security", value)
@@ -209,6 +238,9 @@ hng.size=0
 hng.widget="radio"
 hng:value("1", "Ja")
 hng:value("0", "Nein")
+function hng.cfgvalue(self, section)
+	return "0"
+end
 
 
 hostn = f:field(Value, "hostname", "Hostname")
