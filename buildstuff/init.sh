@@ -1,7 +1,7 @@
 #!/bin/bash
 #archs="brcm-2.4"
 #archs="atheros"
-archs="brcm-2.4 atheros x86"
+archs="atheros brcm-2.4 x86"
 echo $archs>ARCHS.txt
 # dirs
 mkdir dl
@@ -11,10 +11,10 @@ timestamp=`date "+%F_%H-%M"`
 echo $timestamp >timestamp
 date +"%Y/%m/%d %H:%M">VERSION.txt||exit
 repo_luci=~/dev/openwrt/piratenluci/
-repo_packages=~/dev/openwrt/repos/packages/
+#repo_packages=~/dev/openwrt/repos/packages/
 repo_809=~/dev/openwrt/repos/8.09/
 #get basic repos
-git clone $repo_packages||exit
+#git clone $repo_packages||exit
 #git clone git://nbd.name/packages.git||exit
 #git clone git://github.com/alxhh/piratenluci.git||exit
 git clone $repo_luci||exit
@@ -29,10 +29,12 @@ do
 	#git clone git://nbd.name/8.09.git||exit
 	ln -s ../../dl 8.09/dl||exit
 	echo src-link luci $PWD/piratenluci>8.09/feeds.conf||exit
-	echo src-link packages $PWD/packages>>8.09/feeds.conf
+#	echo src-link packages $PWD/packages>>8.09/feeds.conf
+	echo src-svn packages svn://svn.openwrt.org/openwrt/branches/packages_8.09 svn://svn.openwrt.org/openwrt/packages>>8.09/feeds.conf
 	cd 8.09
-	./scripts/feeds update||exit
-	./scripts/feeds install -a -p luci||exit
+	./scripts/feeds update -a||exit
+	./scripts/feeds install -a||exit
+#	./scripts/feeds install -a -p luci||exit
 	cp ../piratenluci/buildstuff/$arch/build.config .config||exit
 	cp -R ../piratenluci/patches .||exit
 	cp ../piratenluci/buildstuff/$arch/series patches/series||exit

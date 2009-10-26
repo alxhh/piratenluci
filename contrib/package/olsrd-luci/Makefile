@@ -11,7 +11,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_BASENAME:=olsrd
 PKG_NAME:=$(PKG_BASENAME)-luci
-PKG_BASEVER:=0.5.6-r6
+PKG_BASEVER:=0.5.6-r5
 PKG_RELEASE:=1
 
 #PKG_HGREV:=5ed3e2c2760c
@@ -24,7 +24,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_BASENAME)-$(PKG_BASEVER).tar.bz2
 PKG_SOURCE_URL:=http://www.olsr.org/releases/0.5
-PKG_MD5SUM:=07362792da718bed8943c2d7d1b4acfe
+PKG_MD5SUM:=57a365750457e13e2e1a5c7963b1d344
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_BASEVER)
 PKG_UNPACK=$(HOST_TAR) -C $(PKG_BUILD_DIR) --strip-components=1 -xjf $(DL_DIR)/$(PKG_SOURCE)
 PKG_VERSION:=$(PKG_BASEVER)+luci1
@@ -138,7 +138,6 @@ define Build/Compile
 		MANDIR="$(PKG_INSTALL_DIR)/usr/share/man" \
 		STRIP="true" \
 		INSTALL_LIB="true" \
-#		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog"
 		SUBDIRS="arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo nameservice secure txtinfo quagga watchdog mdns"
 endef
 
