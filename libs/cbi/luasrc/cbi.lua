@@ -1766,7 +1766,11 @@ function FileBrowser.__init__(self, ...)
 	self.template = "cbi/browser"
 end
 
--- Opens an OpenStreetMap iframe or popup
+--[[ 
+	*Opens an OpenStreetMap iframe or popup
+	*Makes use of resources/OSMLatLon.htm and htdocs/resources/osm.js
+	(is that the right place for files like these?)
+]]--
 
 OpenStreetMapLonLat = class(AbstractValue)
 
@@ -1778,10 +1782,10 @@ function OpenStreetMapLonLat.__init__(self, ...)
 	self.centerlat = "0"
 	self.centerlon = "0"
 	self.zoom = "0"
-	self.iframe_width = "100%"
-	self.iframe_height = "600"
-	self.popup_width = 800
-	self.popup_height = 600
+	self.width = "100%"	--popups will ignore the %-symbol, "100%" is interpreted as "100"
+	self.height = "600"
 	self.popup = false
+	self.displaytext="OpenStretMap" --text on button, that loads and displays the OSMap
+	self.hidetext="X"	-- text on button, that hides OSMap
 end
 
