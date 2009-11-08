@@ -3,8 +3,6 @@ uci batch <<-EOF
 	set freifunk.community.homepage=http://berlin.piratenpartei.de
 	commit freifunk
 	set lucid.main.threadlimit=2
-	uci delete lucid.http.memlimit
-	uci delete lucid.https.memlimit
 	commit lucid
 	set qos.wan.upload=256
 	set qos.wan.download=2048
