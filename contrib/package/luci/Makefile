@@ -23,6 +23,7 @@ else
   PKG_SOURCE_VERSION:=$(PKG_REV)
 endif
 
+PKG_BUILD_DEPENDS:=$(if $(STAGING_DIR_ROOT),lua/host)
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_INSTALL_DIR:=$(PKG_BUILD_DIR)/ipkg-install
 
@@ -80,6 +81,11 @@ endef
 define Package/luci/webtemplate
   $(call Package/luci/libtemplate)
   SUBMENU:=Components
+endef
+
+define Package/luci/collectiontemplate
+  $(call Package/luci/libtemplate)
+  SUBMENU:=Collections
 endef
 
 
@@ -883,6 +889,19 @@ define Package/luci-i18n-spanish/install
 endef
 
 
+### Collections ###
+define Package/luci-kamikaze
+  $(call Package/luci/collectiontemplate)
+  TITLE:=Standard OpenWrt Kamikaze set including full and mini admin and the standard theme
+  DEPENDS:=+luci-admin-full +luci-admin-mini +luci-theme-openwrt +luci-app-firewall
+endef
+
+define Package/luci-light
+  $(call Package/luci/collectiontemplate)
+  TITLE:=Minimum package set using only admin mini and a theme without grafics
+  DEPENDS:=+luci-admin-mini +luci-theme-openwrtlight
+endef
+
 ### Compile ###
 ifneq ($(CONFIG_PACKAGE_luci-core),)
 	PKG_SELECTED_MODULES+=libs/core
@@ -1167,3 +1186,6 @@ $(eval $(call BuildPackage,luci-i18n-greek))
 $(eval $(call BuildPackage,luci-i18n-catalan))
 $(eval $(call BuildPackage,luci-i18n-portuguese))
 $(eval $(call BuildPackage,luci-i18n-spanish))
+
+$(eval $(call BuildPackage,luci-kamikaze))
+$(eval $(call BuildPackage,luci-light))
