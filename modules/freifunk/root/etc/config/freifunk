@@ -90,13 +90,8 @@ config 'defaults' 'time'
 	option 'rdate_servers' '128.138.140.44 171.64.7.77 171.64.7.99 81.169.154.44 130.133.1.10'
 
 config 'defaults' 'upgrade'
-<<<<<<< HEAD:modules/freifunk/root/etc/config/freifunk
-	option 'rssfeed' 'http://firmware.leipzig.freifunk.net/kamikaze/.rss.xml'
-	option 'repository' 'http://firmware.piratenfreifunk.de/piratenfreifunk/latest'
-=======
 	option 'repository' 'http://dev.luci.freifunk-halle.net/freifunk-snapshots'
 	option 'rssfeed' 'http://firmware.leipzig.freifunk.net/kamikaze/.rss.xml'
->>>>>>> nbd:modules/freifunk/root/etc/config/freifunk
 
 config 'community' 'leipzig'
 	option 'name' 'Freifunk Leipzig'
@@ -124,11 +119,7 @@ config 'community' 'l59'
 
 config 'community' 'berlin'
 	option 'name' 'Freifunk Berlin'
-<<<<<<< HEAD:modules/freifunk/root/etc/config/freifunk
 	option 'homepage' 'http://berlin.piratenpartei.de'
-=======
-	option 'homepage' 'http://berlin.freifunk.net'
->>>>>>> nbd:modules/freifunk/root/etc/config/freifunk
 	option 'ssid' 'olsr.freifunk.net'
 	option 'mesh_network' '104.0.0.0/8'
 	option 'splash_network' '10.104.0.0/16'
@@ -153,27 +144,6 @@ config 'community' 'hamburg'
 	option 'splash_prefix' '27'
 	option 'external' 'freifunk_hamburg'
 
-<<<<<<< HEAD:modules/freifunk/root/etc/config/freifunk
-config 'community' 'seefeld'
-	option 'name' 'Freifunk Seefeld'
-	option 'homepage' 'http://wiki.freifunk.net/Seefeld.freifunk.net'
-	option 'ssid' 'seefeld.freifunk.net'
-	option 'mesh_network' '10.111.0.0/16'
-	option 'splash_network' '10.104.0.0/16'
-	option 'splash_prefix' '27'
-	option 'external' 'freifunk_seefeld'
-
-config 'community' 'duesseldorf'
-	option 'name' 'Freifunk Duesseldorf'
-	option 'homepage' 'http://wiki.piratenpartei.de/D%C3%BCsseldorf/Freifunk'
-	option 'ssid' 'duesseldorf.freifunk.net'
-	option 'mesh_network' '10.40.0.0/16'
-	option 'splash_network' '10.104.0.0/16'
-	option 'splash_prefix' '27'
-	option 'external' 'freifunk_duesseldorf'
-
-=======
->>>>>>> nbd:modules/freifunk/root/etc/config/freifunk
 config 'community' 'hannover'
 	option 'name' 'Freifunk Hannover'
 	option 'homepage' 'http://hannover.freifunk.net'
@@ -196,11 +166,6 @@ config 'community' 'jena'
 	option 'name' 'Freifunk Jena'
 	option 'homepage' 'http://www.freifunk-jena.de'
 	option 'ssid' 'jena.freifunk.net'
-<<<<<<< HEAD:modules/freifunk/root/etc/config/freifunk
-	option 'mesh_network' '10.127.0.0/16'
-	option 'splash_network' '10.104.0.0/16'
-	option 'splash_prefix' '27'
-=======
 	option 'mesh_network' '10.127.0.0/20'
 	option 'splash_network' '10.104.0.0/16'
 	option 'splash_prefix' '29'
@@ -241,5 +206,4 @@ config 'community' 'ljubljana'
 	option 'splash_network' '10.14.128.0/17'
 	option 'splash_prefix' '27'
 	option 'external' 'freifunk_ljubljana'
->>>>>>> nbd:modules/freifunk/root/etc/config/freifunk
 
