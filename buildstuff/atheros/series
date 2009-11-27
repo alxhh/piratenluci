@@ -1,1 +1,2 @@
+combined-image.patch -p0
 backport-lua-rev5,patch
