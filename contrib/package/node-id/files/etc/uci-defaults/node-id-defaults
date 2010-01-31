@@ -1,0 +1,3 @@
+#!/bin/sh
+uci get system.@system[0].nodeid || uci set system.@system[0].nodeid=`ifconfig|md5sum |cut -f1 -d " "`
+uci commit system
