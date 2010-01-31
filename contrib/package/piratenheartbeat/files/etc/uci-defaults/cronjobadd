@@ -1,0 +1,5 @@
+#!/bin/sh
+random () {
+echo $((`dd if=/dev/urandom bs=4 count=1 2>/dev/null | hexdump -x | awk '$2 {print "0x" $2$3}'` % $1))
+}
+crontab -l|grep -q heart||echo `random 59` `random 23` \* \* \* /sbin/heartbeat>>/etc/crontabs/root
