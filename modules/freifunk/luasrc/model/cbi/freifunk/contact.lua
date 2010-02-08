@@ -13,6 +13,7 @@ $Id$
 ]]--
 
 luci.i18n.loadc("freifunk")
+local uci = require "luci.model.uci".cursor()
 
 m = Map("freifunk", translate("contact"), translate("contact1"))
 
@@ -23,7 +24,11 @@ c:option(Value, "name", translate("ff_name"))
 c:option(Value, "mail", translate("ff_mail"), translate("ff_mail1"))
 c:option(Value, "phone", translate("ff_phone"))
 c:option(Value, "location", translate("ff_location"))
-c:option(Value, "landesverband", "Landesverband")
+r=c:option(ListValue, "region", translate("pp_regional_assoc"))
+uci:foreach("regions", "region", function(s)
+	r:value(s[".name"], "%s" % s.name)
+end)
+
 c:option(Value, "crew", "Crew")
 c:option(Value, "note", translate("ff_note"))
 

@@ -1,0 +1,51 @@
+config 'region' 'bw'
+	option 'name' 'Baden-Württemberg'
+
+config 'region' 'by'
+	option 'name' 'Bayern'
+
+config 'region' 'be'
+	option 'name' 'Berlin'
+
+config 'region' 'bb'
+	option 'name' 'Brandenburg'
+
+config 'region' 'hb'
+	option 'name' 'Bremen'
+
+config 'region' 'hh'
+	option 'name' 'Hamburg'
+
+config 'region' 'he'
+	option 'name' 'Hessen'
+
+config 'region' 'mv'
+	option 'name' 'Mecklenburg-Vorpommern'
+
+config 'region' 'ni'
+	option 'name' 'Niedersachsen'
+
+config 'region' 'nw'
+	option 'name' 'Nordrhein-Westfalen'
+
+config 'region' 'rp'
+	option 'name' 'Rheinland-Pfalz'
+
+config 'region' 'sl'
+	option 'name' 'Saarland'
+
+config 'region' 'sn'
+	option 'name' 'Sachsen'
+
+config 'region' 'st'
+	option 'name' 'Sachsen-Anhalt'
+
+config 'region' 'sh'
+	option 'name' 'Schleswig-Holstein'
+
+config 'region' 'th'
+	option 'name' 'Thüringen'
+
+config 'region' 'abroad'
+	option 'name' 'Außerhalb Deutschlands'
+

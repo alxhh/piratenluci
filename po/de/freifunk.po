@@ -258,3 +258,7 @@ msgstr "Heruntergeladene Images verifizieren"
 #. Confirm Upgrade
 msgid "ff_remote_update_confirm"
 msgstr "Update bestätigen"
+
+#. Regional association
+msgid "pp_regional_assoc"
+msgstr "Landesverband"
