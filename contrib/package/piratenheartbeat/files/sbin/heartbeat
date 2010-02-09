@@ -22,12 +22,14 @@ lat=`uci show olsrd|grep .lat=|cut -d = -f2`
 lon=`uci show olsrd|grep .lon=|cut -d = -f2`
 crew=seetiger
 lv=berlin
-wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=&lv&partei=1"
+wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv&partei=1"
 
 #missing:
 # crew:string
 # lv:string
+# check whether there are values, otherwise omit
 # partei:integer //should be 1, if pirate party node
+# checkbox needed
  
 # neighboors:integer
 # clients:integer
