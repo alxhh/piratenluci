@@ -13,6 +13,7 @@ find_local_version()
                 date +"%Y%m%d%H%M" -r /bin/sh
         fi
 }
+#TODO: check mode {update,information, highscore}
 
 server=`uci get system.@pirate[0].heartbeatserver`
 node_id=`uci get system.@system[0].nodeid`
@@ -22,12 +23,23 @@ lat=`uci show olsrd|grep .lat=|cut -d = -f2`
 lon=`uci show olsrd|grep .lon=|cut -d = -f2`
 crew=seetiger
 lv=berlin
-wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=&lv&partei=1"
+neighboors=0
+clients=0
+
+#if mode == update
+#wget -s "$server?node_id=$node_id&rev=$version"
+
+#if mode == information
+wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv"
+
+#if mode == highscore
+#wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv&neighboors=$neighboors&clients=$clients"
 
 #missing:
 # crew:string
 # lv:string
-# partei:integer //should be 1, if pirate party node
+# partei:integer //should be not set if pirate party germany
+# land:string //should be not set if germany
  
 # neighboors:integer
 # clients:integer
