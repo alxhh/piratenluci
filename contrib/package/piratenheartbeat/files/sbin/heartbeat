@@ -21,19 +21,23 @@ hostname=`uci get system.@system[0].hostname`
 version=`find_local_version`
 lat=`uci show olsrd|grep .lat=|cut -d = -f2`
 lon=`uci show olsrd|grep .lon=|cut -d = -f2`
-crew=seetiger
-lv=berlin
-neighboors=0
-clients=0
+crew=`uci get freifunk.contact.crew`
+lv=`uci get freifunk.contact.landesverband`
+#based on reachable adhoc networks
+neighboors=`expr $(iwlist wl0 scanning|grep -i adhoc|wc -l) - 1`
+
+#TODO this only submit the current connected clients
+# we need a routine, which constantly record the clients for 24h hours
+clients=`cat /tmp/dhcp.leases|wc -l`
 
 #if mode == update
 #wget -s "$server?node_id=$node_id&rev=$version"
 
 #if mode == information
-wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv"
+#wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv"
 
 #if mode == highscore
-#wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv&neighboors=$neighboors&clients=$clients"
+wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv&neighboors=$neighboors&clients=$clients"
 
 #missing:
 # crew:string
