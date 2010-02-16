@@ -24,7 +24,7 @@ lon=`uci show olsrd|grep .lon=|cut -d = -f2`
 crew=`uci get freifunk.contact.crew`
 lv=`uci get freifunk.contact.landesverband`
 #based on reachable adhoc networks
-neighboors=`expr $(iwlist wl0 scanning|grep -i adhoc|wc -l) - 1`
+neighbours=`echo |nc 127.0.0.1 2006|grep YES|wc -l`
 
 #TODO this only submit the current connected clients
 # we need a routine, which constantly record the clients for 24h hours
