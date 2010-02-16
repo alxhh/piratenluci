@@ -31,6 +31,7 @@ do
 	echo src-link luci $PWD/piratenluci>8.09/feeds.conf||exit
 #	echo src-link packages $PWD/packages>>8.09/feeds.conf
 	echo src-svn packages svn://svn.openwrt.org/openwrt/branches/packages_8.09 svn://svn.openwrt.org/openwrt/packages>>8.09/feeds.conf
+	echo src-git 6mesh git://dev.dd19.de/6mesh.git>>8.09/feeds.conf
 	cd 8.09
 	./scripts/feeds update -a||exit
 	./scripts/feeds install -a||exit
