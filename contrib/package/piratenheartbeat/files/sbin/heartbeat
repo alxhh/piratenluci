@@ -16,7 +16,8 @@ find_local_version()
 #TODO: check mode {update,information, highscore}
 
 server=`uci get system.@pirate[0].heartbeatserver`
-node_id=`uci get system.@system[0].nodeid`
+#node_id=`uci get system.@system[0].nodeid`
+node_id=`ifconfig|grep HWaddr|awk '{print $5 }'|uniq|md5sum|cut -f1 -d " "`
 hostname=`uci get system.@system[0].hostname`
 version=`find_local_version`
 lat=`uci show olsrd|grep .lat=|cut -d = -f2`
