@@ -39,7 +39,7 @@
 
 #iphone_menu_handles{
 	display:block;
-	font-size:45px;
+	font-size:60px;
 	font-weight:bold;
 	height:160px;
 }
@@ -88,21 +88,23 @@
 			}
 
 			#iphone_menu_items .menu_item {
-				padding:10px 30px;			
+				font-size:65px;
+				padding:15px 30px;
+				line-height:1.5em;			
 			}
 
 			#iphone_menu_items .menu_item table { 
-				width:650px;
+				width:720px;
 			}
 
 			#iphone_menu_items .submenu_marker {
-				font-size:45px;
-				padding-left: 100px;
+				font-size:65px;
+				padding: 0px;
+				line-height:1.5em;
 			}
 
 			#iphone_menu_items a {
 				text-decoration:none;
-				font-size:50px;
 				font-weight:bold;
 				color:#ffffff;	
 			}
