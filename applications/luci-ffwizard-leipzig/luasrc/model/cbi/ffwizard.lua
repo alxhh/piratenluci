@@ -68,7 +68,7 @@ main.widget="radio"
 main:value("1", "Ja")
 main:value("0", "Nein")
 function main.cfgvalue(self, section)
-	return "0"
+	return uci:get("freifunk", "wizard", "setup_freifunk") or "1"
 end
 
 
@@ -116,9 +116,8 @@ client.widget="radio"
 client:value("1", "Ja")
 client:value("0", "Nein")
 function client.cfgvalue(self, section)
-	return "0"
+	return uci:get("freifunk", "wizard", "dhcp_splash") or "0"
 end
-
 
 
 
@@ -128,40 +127,32 @@ olsr.widget="radio"
 olsr:value("1", "Ja")
 olsr:value("0", "Nein")
 function olsr.cfgvalue(self, section)
-	return "0"
+	return uci:get("freifunk", "wizard", "setup_olsr") or "0"
+
 end
-
-
-
-
-lat = f:field(Value, "lat", "Breitengrad:")
-lat:depends("olsr", "1")
-lat.rmempty = true
-function lat.cfgvalue(self, section)
-	return uci:get("freifunk", "wizard", "latitude")
-end
-function lat.write(self, section, value)
-	uci:set("freifunk", "wizard", "latitude", value)
-	uci:save("freifunk")
-end
-
-
-
 
 
 lon = f:field(Value, "lon", "Längengrad:")
 lon.rmempty=true
 lon:depends("olsr", "1")
 function lon.cfgvalue(self, section)
-	return uci:get("freifunk", "wizard", "longitude")
+	return uci:get("system", "", "longitude")
 end
 function lon.write(self, section, value)
-	uci:set("freifunk", "wizard", "longitude", value)
-	uci:save("freifunk")
+	uci:set("system", "", "longitude", value)
+	uci:save("system")
 end
 
-
-
+lat = f:field(Value, "lat", "Breitengrad:")
+lat:depends("olsr", "1")
+lat.rmempty = true
+function lat.cfgvalue(self, section)
+	return uci:get("system", "", "latitude")
+end
+function lat.write(self, section, value)
+	uci:set("system", "", "latitude", value)
+	uci:save("system")
+end
 
 osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten mit OpenStreetMap ermitteln:")
 osm:depends("olsr", "1")
@@ -173,19 +164,17 @@ osm.width = "100%"
 osm.height = "600"
 osm.popup = false
 osm.zoom = "7"
-osm.displaytext="OpenStreetap anzeigen"
+osm.displaytext="OpenStreetMap anzeigen"
 osm.hidetext="OpenStreetMap verbergen"
-
-
-
 
 share = f:field(ListValue, "sharenet", "Eigenen Internetzugang freigeben?")
 share.size=0
 share.widget="radio"
 share:value("1", "Ja")
 share:value("0", "Nein")
+
 function share.cfgvalue(self, section)
-	return "0"
+	return uci:get("freifunk", "wizard", "sharenet") or "0"
 end
 
 
@@ -197,38 +186,11 @@ wansec:value("1", "Ja")
 wansec:value("0", "Nein")
 
 function wansec.cfgvalue(self, section)
-	return "0"
+	return uci:get("freifunk", "wizard", "wan_security")
 end
+
 function wansec.write(self, section, value)
 	uci:set("freifunk", "wizard", "wan_security", value)
-	uci:save("freifunk")
-end
-
-
-mail = f:field(Value, "mail", translate("ff_mail"))
-function mail.cfgvalue(self, section)
-	return uci:get("freifunk", "contact", "mail")
-end
-function mail.write(self, section, value)
-	uci:set("freifunk", "contact", "mail", value)
-	uci:save("freifunk")
-end
-
-lv = f:field(Value, "landesverband", "Landesverband:")
-function lv.cfgvalue(self, section)
-	return uci:get("freifunk", "contact", "landesverband")
-end
-function lv.write(self, section, value)
-	uci:set("freifunk", "contact", "landesverband", value)
-	uci:save("freifunk")
-end
-
-crew = f:field(Value, "crew", "Crew:")
-function crew.cfgvalue(self, section)
-	return uci:get("freifunk", "contact", "crew")
-end
-function crew.write(self, section, value)
-	uci:set("freifunk", "contact", "crew", value)
 	uci:save("freifunk")
 end
 
@@ -239,14 +201,52 @@ hng.widget="radio"
 hng:value("1", "Ja")
 hng:value("0", "Nein")
 function hng.cfgvalue(self, section)
-	return "0"
+	return uci:get("freifunk", "wizard", "generatehostname") or "1"
 end
 
 
 hostn = f:field(Value, "hostname", "Hostname")
 hostn.rmempty=false
-hostn.optional=false
+hostn.optional=true
 hostn:depends("gen_hostname","0")
+function hostn.cfgvalue(self, section)
+	return sys.hostname()
+end
+
+
+lv = f:field(ListValue, "region", translate("pp_regional_assoc"))
+uci:foreach("regions", "region", function(s)
+	lv:value(s[".name"], "%s" % s.name)
+end)
+function lv.cfgvalue(self, section)
+	return uci:get("freifunk", "contact", "region")
+end
+function lv.write(self, section, value)
+	uci:set("freifunk", "contact", "region", value)
+	uci:save("freifunk")
+end
+
+crew = f:field(Value, "crew", "Crew")
+function crew.cfgvalue(self, section)
+	return uci:get("freifunk", "contact", "crew")
+end
+function crew.write(self, section, value)
+	uci:set("freifunk", "contact", "crew", value)
+	uci:save("freifunk")
+end
+
+mail = f:field(Value, "mail", translate("ff_mail"))
+function mail.cfgvalue(self, section)
+	return uci:get("freifunk", "contact", "mail")
+end
+function mail.write(self, section, value)
+	uci:set("freifunk", "contact", "mail", value)
+	uci:save("freifunk")
+end
+
+
+
+
 
 
 
@@ -273,6 +273,9 @@ end
 
 -- Configure Freifunk checked
 function main.write(self, section, value)
+	uci:set("freifunk", "wizard", "setup_freifunk", value)
+	uci:save("freifunk")
+
 	if value == "0" then
 		return
 	end
@@ -391,6 +394,9 @@ end
 
 
 function olsr.write(self, section, value)
+	--remember state in for wizard
+	uci:set("freifunk", "wizard", "setup_olsr", value)
+	uci:save("freifunk")
 	if value == "0" then
 		return
 	end
@@ -464,6 +470,10 @@ end
 
 
 function share.write(self, section, value)
+	--remember state for wizard
+	uci:set("freifunk", "wizard", "sharenet", value)
+	uci:save("freifunk")
+
 	uci:delete_all("firewall", "forwarding", {src="freifunk", dest="wan"})
 	uci:delete_all("olsrd", "LoadPlugin", {library="olsrd_dyn_gw_plain.so.0.4"})
 	uci:foreach("firewall", "zone",
@@ -495,57 +505,51 @@ function share.write(self, section, value)
 end
 
 
--- Generic hostname
+-- Set hostname
 function hng.write(self, section, value)
-	local node_ip = meship:formvalue(section) and ip.IPv4(meship:formvalue(section))
-	local new_hostname = uci:get("freifunk", "wizard", "hostname") or "Freifunk"
+	--remember state for wizard
+	uci:set("freifunk", "wizard", "generatehostname", value)
+	uci:save("freifunk")
+	if hng:formvalue(section)=="1" then --generate hostname
+		local node_ip = meship:formvalue(section) and ip.IPv4(meship:formvalue(section))
+		local new_hostname = uci:get("freifunk", "wizard", "hostname_prefix") or "Freifunk"
 
-	if node_ip then		
-		new_hostname = new_hostname.."("..node_ip:string():gsub("%.", "-")..")"
+		if node_ip then		
+			new_hostname = new_hostname.."("..node_ip:string():gsub("%.", "-")..")"
+		end
+
+		uci:foreach("system", "system",
+			function(s)
+				-- Make crond silent
+				uci:set("system", s['.name'], "cronloglevel", "10")
+
+				-- Set hostname
+				uci:set("system", s['.name'], "hostname", new_hostname)							
+			end)
+		sys.hostname(new_hostname)	
+		uci:save("system")
+	else --use custom hostname
+		uci:foreach("system", "system",
+			function(s)
+				-- Make crond silent
+				uci:set("system", s['.name'], "cronloglevel", "10")
+	
+				-- Set hostname
+				uci:set("system", s['.name'], "hostname", value)
+				sys.hostname(value)			
+			end)
+			uci:save("system")
 	end
-
-	uci:foreach("system", "system",
-		function(s)
-			-- Make crond silent
-			uci:set("system", s['.name'], "cronloglevel", "10")
-
-			-- Set hostname
-			uci:set("system", s['.name'], "hostname", new_hostname)
-			sys.hostname(new_hostname)			
-		end)
-
-	uci:save("system")
 end
 
 -- Manual hostname
 function hostn.write (self, section, value)
-	if hng:formvalue(section)=="1" or value=="" then
-		if hng:formvalue(section)~="1" then 
-			hostn.tag_missing[section] = true
-			hng.tag_missing[section] = true
-		end
-		return
-	end
-	uci:foreach("system", "system",
-		function(s)
-			-- Make crond silent
-			uci:set("system", s['.name'], "cronloglevel", "10")
-
-			-- Set hostname
-			uci:set("system", s['.name'], "hostname", value)
-			sys.hostname(value)			
-		end)
-
-		uci:save("system")
 end
 
 
 function client.write(self, section, value)
-	if value == "0" then
-		uci:delete("freifunk", "wizard", "dhcp_splash")
-		uci:save("freifunk")
-		return
-	end
+	uci:set("freifunk", "wizard", "dhcp_splash", value)
+	uci:save("freifunk")
 
 	local device = dev:formvalue(section)
 

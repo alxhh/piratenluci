@@ -1,6 +1,13 @@
 package 'freifunk'
 
 config 'settings' 'wizard'
+        option 'setup_freifunk' '0'
+	option 'dhcp_splash' '0'
+	option 'setup_olsr' '0'
+	option 'generatehostname' '0'
+	option 'hostname_prefix' 'Piratenfreifunk'
+	option 'sharenet' '0'
+	option 'wan_security' '0'
 
 config 'public' 'contact'
 	option 'nickname' ''
