@@ -1,0 +1,6 @@
+config 'defaults' 'wifi_device'
+	option 'channel' '11'
+
+config 'defaults' 'wifi_iface'
+	option 'bssid' 'DE:AD:BE:EF:CA:FE'
+
