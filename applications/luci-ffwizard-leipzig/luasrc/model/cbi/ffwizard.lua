@@ -138,20 +138,12 @@ lon:depends("olsr", "1")
 function lon.cfgvalue(self, section)
 	return uci:get("system", "", "longitude")
 end
-function lon.write(self, section, value)
-	uci:set("system", "", "longitude", value)
-	uci:save("system")
-end
 
 lat = f:field(Value, "lat", "Breitengrad:")
 lat:depends("olsr", "1")
 lat.rmempty = true
 function lat.cfgvalue(self, section)
 	return uci:get("system", "", "latitude")
-end
-function lat.write(self, section, value)
-	uci:set("system", "", "latitude", value)
-	uci:save("system")
 end
 
 osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten mit OpenStreetMap ermitteln:")
@@ -218,9 +210,11 @@ lv = f:field(ListValue, "region", translate("pp_regional_assoc"))
 uci:foreach("regions", "region", function(s)
 	lv:value(s[".name"], "%s" % s.name)
 end)
+
 function lv.cfgvalue(self, section)
 	return uci:get("freifunk", "contact", "region")
 end
+
 function lv.write(self, section, value)
 	uci:set("freifunk", "contact", "region", value)
 	uci:save("freifunk")
@@ -244,7 +238,21 @@ function mail.write(self, section, value)
 	uci:save("freifunk")
 end
 
+hbm = f:field(ListValue, "heartbeat_mode", "Heartbeatmodus")
+hbm.size=1
+hbm.widget="radio"
+uci:foreach("freifunk", "heartbeat_mode", function(s)
+	hbm:value(s[".name"], "%s (%s)" %{s.name, s.description})
+end)
 
+function hbm.cfgvalue(self, section)
+	return uci:get("freifunk", "heartbeat", "mode")
+end
+
+function hbm.write(self, section, value)
+	uci:set("freifunk", "heartbeat", "mode", value)
+	uci:save("freifunk")
+end
 
 
 

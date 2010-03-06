@@ -9,6 +9,25 @@ config 'settings' 'wizard'
 	option 'sharenet' '0'
 	option 'wan_security' '0'
 
+config 'settings' 'heartbeat'
+	option 'mode' 'disabled'
+
+config 'heartbeat_mode' 'disabled'
+	option 'name' 'Disabled'
+	option 'description' 'Beschreibung disabled'
+
+config 'heartbeat_mode' 'update'
+	option 'name' 'Update'
+	option 'description' 'Beschreibung update'
+
+config 'heartbeat_mode' 'information'
+	option 'name' 'Information'
+	option 'description' 'Beschreibung information'
+
+config 'heartbeat_mode' 'highscore'
+	option 'name' 'Highscore'
+	option 'description' 'Beschreibung highscore'
+
 config 'public' 'contact'
 	option 'nickname' ''
 	option 'name' ''

@@ -38,4 +38,5 @@ s = m2:section(TypedSection, "system", "")
 s:option(Value, "latitude", translate("latitude", "Breite")).rmempty = true
 s:option(Value, "longitude", translate("longitude", "Länge")).rmempty = true
 
+
 return m, m2

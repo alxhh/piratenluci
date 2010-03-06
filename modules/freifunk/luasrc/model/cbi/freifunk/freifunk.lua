@@ -11,6 +11,9 @@ You may obtain a copy of the License at
 
 $Id$
 ]]--
+luci.i18n.loadc("freifunk")
+local uci = require "luci.model.uci".cursor()
+
 m = Map("freifunk", "Freifunk")
 
 c = m:section(NamedSection, "community", "public", "Gemeinschaft", [[Dies sind die Grundeinstellungen
@@ -20,5 +23,13 @@ c:option(Value, "name", "Gemeinschaft")
 c:option(Value, "homepage", "Webseite")
 c:option(Value, "ssid", "ESSID")
 c:option(Value, "prefix", "Netzprefix")
+
+d = m:section(NamedSection, "heartbeat", "settings", "Heartbeat")
+hbm=d:option(ListValue, "mode", "Heartbeatmodus")
+hbm.widget="radio"
+hbm.size=1
+uci:foreach("freifunk", "heartbeat_mode", function(s)
+	hbm:value(s[".name"], "%s (%s)" %{s.name, s.description})
+end)
 
 return m
