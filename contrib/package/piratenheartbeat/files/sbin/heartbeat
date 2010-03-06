@@ -16,8 +16,14 @@ find_local_version()
 #TODO: check mode {update,information, highscore}
 
 server=`uci get system.@pirate[0].heartbeatserver`
-#node_id=`uci get system.@system[0].nodeid`
-node_id=`ifconfig|grep HWaddr|awk '{print $5 }'|uniq|md5sum|cut -f1 -d " "`
+node_id=`uci get system.@system[0].nodeid`
+if [ $node_id == "d41d8cd98f00b204e9800998ecf8427e" ]
+then
+uci set system.@system[0].nodeid=`ifconfig -a|md5sum |cut -f1 -d " "`
+fi
+
+#node_id=`ifconfig|grep HWaddr|awk '{print $5 }'|uniq|md5sum|cut -f1 -d " "`
+hostname=`uci get system.@system[0].hostname`
 hostname=`uci get system.@system[0].hostname`
 version=`find_local_version`
 lat=`uci show olsrd|grep .lat=|cut -d = -f2`
@@ -29,7 +35,10 @@ neighbours=`echo |nc 127.0.0.1 2006|grep YES|wc -l`
 
 #TODO this only submit the current connected clients
 # we need a routine, which constantly record the clients for 24h hours
-clients=`cat /tmp/dhcp.leases|wc -l`
+clients=`cat /tmp/machashes|sort|uniq|wc -l`
+
+#reset client count
+rm /tmp/machashes
 
 #if mode == update
 #wget -s "$server?node_id=$node_id&rev=$version"

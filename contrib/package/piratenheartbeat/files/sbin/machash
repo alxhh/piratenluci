@@ -1,0 +1,2 @@
+#!/bin/sh
+logread -f | while read line ; do machash=$(echo $line | grep DHCPACK | cut -d ' ' -f 9 | md5sum | cut -d ' ' -f 1) ; echo $machash >> /tmp/machashes; done
