@@ -10,7 +10,7 @@ config 'settings' 'wizard'
 	option 'wan_security' '0'
 
 config 'settings' 'heartbeat'
-	option 'mode' 'disabled'
+	option 'mode' 'update'
 
 config 'heartbeat_mode' 'disabled'
 	option 'name' 'Disabled'
