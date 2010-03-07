@@ -17,44 +17,41 @@ find_local_version()
 
 server=`uci get system.@pirate[0].heartbeatserver`
 node_id=`uci get system.@system[0].nodeid`
+mode=`uci get  freifunk.heartbeat.mode`
+
+
 if [ $node_id == "d41d8cd98f00b204e9800998ecf8427e" ]
 then
 uci set system.@system[0].nodeid=`ifconfig -a|md5sum |cut -f1 -d " "`
+node_id=`uci get system.@system[0].nodeid`
 fi
 
-#node_id=`ifconfig|grep HWaddr|awk '{print $5 }'|uniq|md5sum|cut -f1 -d " "`
-hostname=`uci get system.@system[0].hostname`
+
+#information data
 hostname=`uci get system.@system[0].hostname`
 version=`find_local_version`
 lat=`uci show olsrd|grep .lat=|cut -d = -f2`
 lon=`uci show olsrd|grep .lon=|cut -d = -f2`
 crew=`uci get freifunk.contact.crew`
 lv=`uci get freifunk.contact.landesverband`
-#based on reachable adhoc networks
-neighbours=`echo |nc 127.0.0.1 2006|grep YES|wc -l`
 
-#TODO this only submit the current connected clients
-# we need a routine, which constantly record the clients for 24h hours
+#highscore data
+neighbours=`echo |nc 127.0.0.1 2006|grep YES|wc -l`
 clients=`cat /tmp/machashes|sort|uniq|wc -l`
 
 #reset client count
 rm /tmp/machashes
 
-#if mode == update
-#wget -s "$server?node_id=$node_id&rev=$version"
+if [ $mode == "update" ]
+wget -s "$server?node_id=$node_id&rev=$version"
+fi
 
-#if mode == information
-#wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv"
+if [ $mode == "information" ]
+wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv"
+fi
 
-#if mode == highscore
+if [ $mode == "highscore" ]
 wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv&neighboors=$neighboors&clients=$clients"
+fi
 
-#missing:
-# crew:string
-# lv:string
-# partei:integer //should be not set if pirate party germany
-# land:string //should be not set if germany
- 
-# neighboors:integer
-# clients:integer
  

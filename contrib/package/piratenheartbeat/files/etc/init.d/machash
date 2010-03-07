@@ -1,40 +1,10 @@
 #!/bin/sh /etc/rc.common
 
-START=45
-
-# Disable all services that are managed by the machash
-
-disable_service() {
-    local config=$1
-    config_get enabled "$config" enabled
-
-    [ -z $enabled -o $enabled == 0 ] && return
-
-
-    if [ -f /etc/init.d/$config ]; then
-        /etc/init.d/$config disable
-        /etc/init.d/$config stop
-    fi
-
-}
-
-do_config() {
-    local config=$1
-    config_get OPT_PORT "$config" port
-}
-
+START=55
 
 start() {
-    config_load node_controller
-    config_foreach disable_service service
-
-    config_foreach do_config node_controller
-
-    OPTS=""
-    [ -n "$OPT_PORT" ] && OPTS="$OPTS --port $OPT_PORT"
-
     sleep 8
-    start-stop-daemon -S -b -m -p /var/run/machash.pid -x /usr/sbin/machash -- $OPTS
+    start-stop-daemon -S -b -m -p /var/run/machash.pid -x /sbin/machash -- $OPTS
 }
 
 stop() {
