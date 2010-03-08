@@ -462,7 +462,11 @@ function net.routes6(callback)
 				refcount = tonumber(refcnt, 16),
 				usecount = tonumber(usecnt, 16),
 				flags    = tonumber(flags, 16),
-				device   = dev
+				device   = dev,
+
+				-- lua number is too small for storing the metric
+				-- add a metric_raw field with the original content
+				metric_raw = metric
 			}
 
 			if callback then
@@ -730,7 +734,7 @@ end
 -- @return		Numeric index value
 function init.index(name)
 	if fs.access(init.dir..name) then
-		return call("source "..init.dir..name.."; exit $START")
+		return call("source "..init.dir..name.." enabled; exit $START")
 	end
 end
 

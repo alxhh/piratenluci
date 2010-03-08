@@ -30,14 +30,7 @@ config qos
 
 config system
 	option init led
-
-config luci_hosts
-	option init luci_hosts
-	list affects dhcp
-
-config luci_ethers
-	option init luci_ethers
-	list affects dhcp
+	list affects luci_statistics
 
 config luci_splash
 	option init luci_splash
