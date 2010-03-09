@@ -13,11 +13,10 @@ find_local_version()
                 date +"%Y%m%d%H%M" -r /bin/sh
         fi
 }
-#TODO: check mode {update,information, highscore}
 
 server=`uci get system.@pirate[0].heartbeatserver`
 node_id=`uci get system.@system[0].nodeid`
-mode=`uci get  freifunk.heartbeat.mode`
+mode=`uci get  freifunk.heartbeat.mode || echo highscore`
 
 
 if [ $node_id == "d41d8cd98f00b204e9800998ecf8427e" ]
@@ -43,14 +42,17 @@ clients=`cat /tmp/machashes|sort|uniq|wc -l`
 rm /tmp/machashes
 
 if [ $mode == "update" ]
+then	
 wget -s "$server?node_id=$node_id&rev=$version"
 fi
 
 if [ $mode == "information" ]
+then	
 wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv"
 fi
 
 if [ $mode == "highscore" ]
+then	
 wget -s "$server?node_id=$node_id&name=$hostname&lat=$lat&lon=$lon&rev=$version&crew=$crew&lv=$lv&neighboors=$neighboors&clients=$clients"
 fi
 
