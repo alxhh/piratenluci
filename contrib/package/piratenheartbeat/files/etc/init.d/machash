@@ -4,7 +4,7 @@ START=55
 
 start() {
     sleep 8
-    start-stop-daemon -S -b -m -p /var/run/machash.pid -x /sbin/machash -- $OPTS
+    start-stop-daemon -S -x /sbin/machash -- $OPTS
 }
 
 stop() {
