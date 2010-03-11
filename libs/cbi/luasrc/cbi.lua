@@ -1222,6 +1222,7 @@ function AbstractValue.__init__(self, map, section, option, ...)
 	self.default   = nil
 	self.size      = nil
 	self.optional  = false
+	self.forcewrite =false
 end
 
 function AbstractValue.prepare(self)
@@ -1323,7 +1324,7 @@ function AbstractValue.parse(self, section, novld)
 			end 
 			self.map.save = false
 		end
-		if fvalue and not (fvalue == cvalue) then
+		if fvalue and (not (fvalue == cvalue) or self.forcewrite) then
 			if self:write(section, fvalue) then
 				-- Push events
 				self.section.changed = true
