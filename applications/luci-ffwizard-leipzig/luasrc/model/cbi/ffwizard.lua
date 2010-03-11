@@ -54,6 +54,7 @@ end
 f = SimpleForm("ffwizward", "Freifunkassistent",
  "Dieser Assistent unterstüzt bei der Einrichtung des Routers für das Freifunknetz.")
 
+-------------------
 
 dev = f:field(ListValue, "device", "WLAN-Gerät")
 uci:foreach("wireless", "wifi-device",
@@ -61,20 +62,23 @@ uci:foreach("wireless", "wifi-device",
 		dev:value(section[".name"])
 	end)
 
+-------------------
 
 main = f:field(ListValue, "wifi", "Freifunkzugang einrichten?")
 main.size=0
 main.widget="radio"
 main:value("1", "Ja")
 main:value("0", "Nein")
+main.forcewrite = true
 function main.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "setup_freifunk") or "1"
 end
 
-
+-------------------
 
 net = f:field(Value, "net", "Freifunk Community", "Mesh Netzbereich:")
 net.rmempty = true
+net.forcewrite = true
 net:depends("wifi", "1")
 uci:foreach("freifunk", "community", function(s)
 	net:value(s[".name"], "%s (%s)" % {s.name, s.mesh_network or "?"})
@@ -83,20 +87,23 @@ end)
 function net.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "net")
 end
+
 function net.write(self, section, value)
 	uci:set("freifunk", "wizard", "net", value)
 	uci:save("freifunk")
 end
 
-
-
+-------------------
 
 meship = f:field(Value, "meship", "Mesh IP Adresse", "Netzweit eindeutige Identifikation:")
 meship.rmempty = true
+meship.forcewrite = true
 meship:depends("wifi", "1")
+
 function meship.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "meship")
 end
+
 function meship.write(self, section, value)
 	uci:set("freifunk", "wizard", "meship", value)
 	uci:save("freifunk")
@@ -106,45 +113,72 @@ function meship.validate(self, value)
 	return ( x and x:prefix() == 32 ) and x:string() or ""
 end
 
+-------------------
 
-
-
-client = f:field(ListValue, "client", "WLAN-DHCP anbieten?")
+client = f:field(ListValue, "client", "DHCP anbieten?")
 client:depends("wifi", "1")
-client.size=0
+client.size=1
 client.widget="radio"
-client:value("1", "Ja")
+client.forcewrite = true
 client:value("0", "Nein")
+client:value("1", "Ja - WLAN-DHCP")
+client:value("2", "Ja - Mesh-DHCP")
 function client.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "dhcp_splash") or "0"
 end
 
+-------------------
 
+dhcpmeshsplash = f:field(Value, "dhcpmeshsplash", "Netzweit eindeutiges DHCP Netz")
+dhcpmeshsplash:depends("client", "2")
+
+-------------------
 
 olsr = f:field(ListValue, "olsr", "OLSR einrichten?")
 olsr.size=0
+olsr.forcewrite = true
 olsr.widget="radio"
 olsr:value("1", "Ja")
 olsr:value("0", "Nein")
 function olsr.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "setup_olsr") or "0"
-
 end
 
+-------------------
 
 lon = f:field(Value, "lon", "Längengrad:")
 lon.rmempty=true
 lon:depends("olsr", "1")
-function lon.cfgvalue(self, section)
-	return uci:get("system", "", "longitude")
-end
+
+uci:foreach("system", "system",
+	function(s)
+		function lon.cfgvalue(self, section)
+			return (s.longitude)
+		end
+	end)
+--the foreach-loop works. The following does not =(
+--function lon.cfgvalue(self, section)
+--	return (uci:get("system", "", "longitude")
+--end
+
+-------------------
 
 lat = f:field(Value, "lat", "Breitengrad:")
 lat:depends("olsr", "1")
 lat.rmempty = true
-function lat.cfgvalue(self, section)
-	return uci:get("system", "", "latitude")
-end
+
+uci:foreach("system", "system",
+	function(s)
+		function lat.cfgvalue(self, section)
+			return (s.latitude)
+		end
+	end)
+--the foreach-loop works. The following does not =(
+--function lat.cfgvalue(self, section)
+--	return uci:get("system", "", "latitude")
+--end
+
+-------------------
 
 osm = f:field(OpenStreetMapLonLat, "latlon", "Geokoordinaten mit OpenStreetMap ermitteln:")
 osm:depends("olsr", "1")
@@ -159,8 +193,11 @@ osm.zoom = "7"
 osm.displaytext="OpenStreetMap anzeigen"
 osm.hidetext="OpenStreetMap verbergen"
 
+-------------------
+
 share = f:field(ListValue, "sharenet", "Eigenen Internetzugang freigeben?")
 share.size=0
+share.forcewrite = true
 share.widget="radio"
 share:value("1", "Ja")
 share:value("0", "Nein")
@@ -169,8 +206,10 @@ function share.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "sharenet") or "0"
 end
 
+-------------------
 
 wansec = f:field(ListValue, "wansec", "Mein Netzwerk vor Zugriff aus dem Freifunknetz schützen?")
+wansec.forcewrite = true
 wansec:depends("sharenet", "1")
 wansec.size=0
 wansec.widget="radio"
@@ -186,8 +225,10 @@ function wansec.write(self, section, value)
 	uci:save("freifunk")
 end
 
+-------------------
 
 hng = f:field(ListValue, "gen_hostname", "Hostname automatisch generieren?")
+hng.forcewrite = true
 hng.size=0
 hng.widget="radio"
 hng:value("1", "Ja")
@@ -196,19 +237,22 @@ function hng.cfgvalue(self, section)
 	return uci:get("freifunk", "wizard", "generatehostname") or "1"
 end
 
+-------------------
 
 hostn = f:field(Value, "hostname", "Hostname")
 hostn.rmempty=false
+hostn.forcewrite = true
 hostn.optional=true
 hostn:depends("gen_hostname","0")
 function hostn.cfgvalue(self, section)
 	return sys.hostname()
 end
 
+-------------------
 
 lv = f:field(ListValue, "region", translate("pp_regional_assoc"))
 uci:foreach("regions", "region", function(s)
-	lv:value(s[".name"], "%s" % s.name)
+	lv:value("%s" % s.name, "%s" % s.name)
 end)
 
 function lv.cfgvalue(self, section)
@@ -220,6 +264,8 @@ function lv.write(self, section, value)
 	uci:save("freifunk")
 end
 
+-------------------
+
 crew = f:field(Value, "crew", "Crew")
 function crew.cfgvalue(self, section)
 	return uci:get("freifunk", "contact", "crew")
@@ -229,6 +275,8 @@ function crew.write(self, section, value)
 	uci:save("freifunk")
 end
 
+-------------------
+
 mail = f:field(Value, "mail", translate("ff_mail"))
 function mail.cfgvalue(self, section)
 	return uci:get("freifunk", "contact", "mail")
@@ -237,6 +285,8 @@ function mail.write(self, section, value)
 	uci:set("freifunk", "contact", "mail", value)
 	uci:save("freifunk")
 end
+
+-------------------
 
 hbm = f:field(ListValue, "heartbeat_mode", "Heartbeatmodus")
 hbm.size=1
@@ -253,7 +303,6 @@ function hbm.write(self, section, value)
 	uci:set("freifunk", "heartbeat", "mode", value)
 	uci:save("freifunk")
 end
-
 
 
 
@@ -402,7 +451,7 @@ end
 
 
 function olsr.write(self, section, value)
-	--remember state in for wizard
+	--remember state for wizard
 	uci:set("freifunk", "wizard", "setup_olsr", value)
 	uci:save("freifunk")
 	if value == "0" then
@@ -417,7 +466,6 @@ function olsr.write(self, section, value)
 
 	local latval = tonumber(lat:formvalue(section))
 	local lonval = tonumber(lon:formvalue(section))
-
 
 	-- Delete old interface
 	uci:delete_all("olsrd", "Interface", {interface=device})
@@ -452,11 +500,27 @@ function olsr.write(self, section, value)
 		lon         = lonval and string.format("%.15f", lonval) or ""
 	})
 
+	-- Collect MESH DHCP IP NET
+	local splashnet = dhcpmeshsplash:formvalue(section) and ip.IPv4(dhcpmeshsplash:formvalue(section)) and client:formvalue(section)==2
+
+	-- Write new HNA4 dhcp settings
+	if splashnet then
+		local splash_mask = splashnet:mask():string()
+		local splash_network = splashnet:network():string()
+		uci:section("olsrd", "Hna4", nil, {
+		    netmask  = splash_mask,
+		    netaddr  = splash_network
+		})
+	end
+
+
 	-- Save latlon to system too
 	if latval and lonval then
 		uci:foreach("system", "system", function(s)
 			uci:set("system", s[".name"], "latlon",
-				string.format("%.15f %.15f", latval, lonval))
+				string.format("%.15f %.15f", latval, lonval)) --fixme!
+			uci:set("system", s[".name"], "latitude",string.format("%.15f", latval))
+			uci:set("system", s[".name"], "longitude",string.format("%.15f", lonval))
 		end)
 	else
 		uci:foreach("system", "system", function(s)
@@ -543,7 +607,7 @@ function hng.write(self, section, value)
 				uci:set("system", s['.name'], "cronloglevel", "10")
 	
 				-- Set hostname
-				uci:set("system", s['.name'], "hostname", value)
+				uci:set("system", s['.name'], "hostname", hostn:formvalue(section))
 				sys.hostname(value)			
 			end)
 			uci:save("system")
@@ -564,11 +628,25 @@ function client.write(self, section, value)
 	-- Collect IP-Address
 	local node_ip = meship:formvalue(section)
 
-	if not node_ip then return end
+	-- Collect MESH DHCP IP NET
+	local splashnet = dhcpmeshsplash:formvalue(section) and ip.IPv4(dhcpmeshsplash:formvalue(section))
+
+	if not node_ip or not ip.IPv4(node_ip) then return end
 
 	local community = net:formvalue(section)
 	local external  = community and uci:get("freifunk", community, "external") or ""
-	local splash_ip, splash_mask = mksubnet(community, node_ip)
+	if splashnet then
+		splash_ip = splashnet:minhost():string()
+		splash_mask = splashnet:mask():string()
+		uci:set("freifunk", "wizard", "dhcp_mesh_splash", splashnet:string())
+		uci:save("freifunk")
+	else
+		splash_ip, splash_mask = mksubnet(community, node_ip)
+		uci:delete("freifunk", "wizard", "dhcp_mesh_splash")
+		uci:save("freifunk")
+	end
+
+
 
 	-- Delete old alias
 	uci:delete("network", device .. "dhcp")
@@ -588,8 +666,6 @@ function client.write(self, section, value)
 	local dhcpbase = uci:get_all("freifunk", "dhcp")
 	util.update(dhcpbase, uci:get_all(external, "dhcp") or {})
 	dhcpbase.interface = device .. "dhcp"
-	dhcpbase.start = dhcpbeg
-	dhcpbase.limit = limit
 	dhcpbase.force = 1
 
 	uci:section("dhcp", "dhcp", device .. "dhcp", dhcpbase)
