@@ -608,8 +608,8 @@ function hng.write(self, section, value)
 	
 				-- Set hostname
 				uci:set("system", s['.name'], "hostname", hostn:formvalue(section))
-				sys.hostname(value)			
 			end)
+			sys.hostname(hostn:formvalue(section))
 			uci:save("system")
 	end
 end
