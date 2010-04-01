@@ -595,11 +595,11 @@ end
 								</div>
 								<!--- end mode menu --->
 
-								<h1><%=luci.version.distname%></h1>
+								<h1><%=hostname%></h1>
 								<p>
+									<%=luci.version.distname%><br />
 									<%=luci.version.distversion%><br />
 									<%:load%>: <%="%.2f" % load1%> <%="%.2f" % load5%> <%="%.2f" % load15%><br />
-									<%:hostname%>: <%=hostname%>
 								</p>
 								<a href="https://www.piratenpartei.de">
 									<img 
