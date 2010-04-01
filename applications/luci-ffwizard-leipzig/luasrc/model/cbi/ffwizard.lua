@@ -239,7 +239,7 @@ end
 
 -------------------
 
-hostn = f:field(Value, "hostname", "Hostname")
+hostn = f:field(Value, "hostname", "Hostname", "Bitte keine Leerzeichen.")
 hostn.rmempty=false
 hostn.forcewrite = true
 hostn.optional=true
