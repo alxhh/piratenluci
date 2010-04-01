@@ -227,17 +227,6 @@ define Package/luci-lmo/install
 endef
 
 
-define Package/luci-luanet
-  $(call Package/luci/libtemplate)
-  TITLE:=luanet
-  DEPENDS+=+libiw
-endef
-
-define Package/luci-luanet/install
-	$(call Package/luci/install/template,$(1),libs/luanet)
-endef
-
-
 define Package/luci-lucid
   $(call Package/luci/libtemplate)
   TITLE:=LuCId Superserver
@@ -560,14 +549,14 @@ define Package/luci-app-samba/install
 endef
 
 
-define Package/luci-app-mmc_over_gpio
+define Package/luci-app-mmc-over-gpio
   $(call Package/luci/webtemplate)
-  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-mmc_over_gpio:kmod-mmc-over-gpio
+  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-mmc-over-gpio:kmod-mmc-over-gpio
   TITLE:=mmc_over_gpio
 endef
 
-define Package/luci-app-mmc_over_gpio/install
-        $(call Package/luci/install/template,$(1),applications/luci-mmc_over_gpio)
+define Package/luci-app-mmc-over-gpio/install
+        $(call Package/luci/install/template,$(1),applications/luci-mmc-over-gpio)
 endef
 
 
@@ -592,14 +581,14 @@ define Package/luci-app-ushare/install
         $(call Package/luci/install/template,$(1),applications/luci-ushare)
 endef
 
-define Package/luci-app-hd_idle
+define Package/luci-app-hd-idle
   $(call Package/luci/webtemplate)
-  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-hd_idle:hd-idle
+  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-hd-idle:hd-idle
   TITLE:=hd-idle
 endef
 
-define Package/luci-app-hd_idle/install
-        $(call Package/luci/install/template,$(1),applications/luci-hd_idle)
+define Package/luci-app-hd-idle/install
+        $(call Package/luci/install/template,$(1),applications/luci-hd-idle)
 endef
 
 define Package/luci-app-tinyproxy
@@ -921,9 +910,6 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-lmo),)
 	PKG_SELECTED_MODULES+=libs/lmo
 endif
-ifneq ($(CONFIG_PACKAGE_luci-luanet),)
-	PKG_SELECTED_MODULES+=libs/luanet
-endif
 ifneq ($(CONFIG_PACKAGE_luci-lucid),)
 	PKG_SELECTED_MODULES+=libs/lucid libs/lucid-http
 endif
@@ -999,8 +985,8 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-app-samba),)
 	PKG_SELECTED_MODULES+=applications/luci-samba
 endif
-ifneq ($(CONFIG_PACKAGE_luci-app-mmc_over_gpio),)
-        PKG_SELECTED_MODULES+=applications/luci-mmc_over_gpio
+ifneq ($(CONFIG_PACKAGE_luci-app-mmc-over-gpio),)
+        PKG_SELECTED_MODULES+=applications/luci-mmc-over-gpio
 endif
 ifneq ($(CONFIG_PACKAGE_luci-app-p910nd),)
         PKG_SELECTED_MODULES+=applications/luci-p910nd
@@ -1008,8 +994,8 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-app-ushare),)
         PKG_SELECTED_MODULES+=applications/luci-ushare
 endif
-ifneq ($(CONFIG_PACKAGE_luci-app-hd_idle),)
-       PKG_SELECTED_MODULES+=applications/luci-hd_idle
+ifneq ($(CONFIG_PACKAGE_luci-app-hd-idle),)
+       PKG_SELECTED_MODULES+=applications/luci-hd-idle
 endif
 ifneq ($(CONFIG_PACKAGE_luci-app-tinyproxy),)
        PKG_SELECTED_MODULES+=applications/luci-tinyproxy
@@ -1115,7 +1101,6 @@ $(eval $(call BuildPackage,luci-httpclient))
 $(eval $(call BuildPackage,luci-ipkg))
 $(eval $(call BuildPackage,luci-json))
 $(eval $(call BuildPackage,luci-lmo))
-$(eval $(call BuildPackage,luci-luanet))
 $(eval $(call BuildPackage,luci-lucid))
 $(eval $(call BuildPackage,luci-nixio))
 $(eval $(call BuildPackage,luci-px5g))
@@ -1143,10 +1128,10 @@ $(eval $(call BuildPackage,luci-app-upnp))
 $(eval $(call BuildPackage,luci-app-ntpc))
 $(eval $(call BuildPackage,luci-app-ddns))
 $(eval $(call BuildPackage,luci-app-samba))
-$(eval $(call BuildPackage,luci-app-mmc_over_gpio))
+$(eval $(call BuildPackage,luci-app-mmc-over-gpio))
 $(eval $(call BuildPackage,luci-app-p910nd))
 $(eval $(call BuildPackage,luci-app-ushare))
-$(eval $(call BuildPackage,luci-app-hd_idle))
+$(eval $(call BuildPackage,luci-app-hd-idle))
 $(eval $(call BuildPackage,luci-app-tinyproxy))
 $(eval $(call BuildPackage,luci-app-initmgr))
 $(eval $(call BuildPackage,luci-app-livestats))
