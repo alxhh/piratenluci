@@ -23,22 +23,24 @@ luci.i18n.loadc("freifunk")
 local uci = require "luci.model.uci".cursor()
 local fs = require "luci.fs"
 
-m = Map("custom_splash", "Custom Splash")
+m = Map("freifunk", "Custom Splash")
 
-d = m:section(NamedSection, "splash", "custom", "Custom Splash")
-active=d:option(Flag, "active", "Custom Splash benutzen?")
-active.widget="checkbox"
+d = m:section(NamedSection, "custom_splash", "settings", "Custom Splash")
 
-dpos=d:option(ListValue, "position", "Position des Disclaimers")
-dpos:value("top", "oben")
-dpos:value("left", "links")
-dpos:value("right", "rechts")
-dpos:value("bottom", "unten")
+----------------
 
-html=d:option(TextValue, "html", "HTML")
-html.rows="30"
-function html.cfgvalue(self, section)
-	cs=fs.readfile("custom_splash.htm")
+active=d:option(ListValue, "mode", "Custom Splash benutzen?")
+active.widget="radio"
+active.size=1
+active:value("enabled", "Ja")
+active:value("disabled", "Nein")
+
+----------------
+
+header=d:option(TextValue, "header", "Custom Header")
+header.rows="20"
+function header.cfgvalue(self, section)
+	cs=fs.readfile("custom_header.htm")
 	if cs == nil then
 		return ""
 	else 
@@ -46,8 +48,25 @@ function html.cfgvalue(self, section)
 	end
 end
 
-function html.write(self, section, value)
-	fs.writefile("custom_splash.htm",value)
+function header.write(self, section, value)
+	fs.writefile("custom_header.htm",value)
+end
+
+----------------
+
+footer=d:option(TextValue, "footer", "Custom Footer")
+footer.rows="20"
+function footer.cfgvalue(self, section)
+	cs=fs.readfile("custom_footer.htm")
+	if cs == nil then
+		return ""
+	else 
+		return cs
+	end
+end
+
+function footer.write(self, section, value)
+	fs.writefile("custom_footer.htm",value)
 end
 
 
