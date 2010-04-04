@@ -53,6 +53,7 @@
 		
 		#heading {
 			margin-left:20%; /* in addtion to the absolute header padding */
+			margin-top:10px; /* in addtion to the absolute header padding */
 		}
 	/**** End basic background layout setting ****/
 	

@@ -33,6 +33,7 @@ local tree     = luci.dispatcher.node()
 local cattree  = category and luci.dispatcher.node(category)
 local node     = luci.dispatcher.context.dispatched
 local hostname = luci.sys.hostname()
+local identifier, model, total_mem, cache, buffer, free_mem = luci.sys.sysinfo()
 
 local c = tree
 for i,r in ipairs(request) do
@@ -598,7 +599,12 @@ end
 								<p>
 									<%=luci.version.distname%><br />
 									<%=luci.version.distversion%><br />
+									<br/>
+									<%=model%><br/>
+									<br/>
 									<%:load%>: <%="%.2f" % load1%> <%="%.2f" % load5%> <%="%.2f" % load15%><br />
+									Total memory: <%=total_mem%> kB<br />
+									Free Memory: <%=free_mem%> kB<br />
 								</p>
 								<a href="https://www.piratenpartei.de">
 									<img 
