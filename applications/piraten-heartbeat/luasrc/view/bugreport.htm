@@ -1,0 +1,48 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id$
+
+-%>
+<%+header%>
+<%
+require("luci.sys")
+local version=luci.sys.exec('sed -e "s!.*$D4/$D2/$D2$D2:$D2.*!\\1\\2\\3\\4\\5!p;t" /rom/etc/banner')
+local uci_show=luci.sys.exec('uci show')
+%>
+
+<%=output%>
+
+<form method="put" action="http://heartbeat.piratenfreifunk.de/fehlerberichte">
+	<div class="cbi-map">
+		<h2><a id="content" name="content">Heartbeat - Fehlerbericht</a></h2>
+		<div class="cbi-map-descr">Mit Hilfe dieses Formulars lassen sich Systemdaten an heartbeat.piratenfreifunk.de schicken. Nach Abschicken der Daten läßt sich ein Fehlerbericht erstellen.</div>
+			<fieldset class="cbi-section">			
+				<div class="cbi-section-node">
+					<div class="cbi-value" ><label class="cbi-value-title" for="heartbeat[version]">Version</label>
+						<div class="cbi-value-field">
+							<input class="cbi-input-text" type="text" id="heartbeat_version" name="heartbeat[version]" value="<%=version%>"/>
+						</div>
+					</div>
+					<div class="cbi-value" ><label class="cbi-value-title" for="heartbeat[config]">UCI-Config</label>
+						<div class="cbi-value-field">
+							<textarea name="heartbeat[config]" cols="60" rows="10">
+								<%=uci_show%>
+							</textarea>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+	<div>
+	<input type="submit" value="Daten senden" />
+</form>
+<%+footer%>
