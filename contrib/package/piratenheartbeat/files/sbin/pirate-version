@@ -4,13 +4,14 @@ local D2='\([0-9]\{2\}\)'
 local D4='\([0-9]\{4\}\)'                                           
 local NL='
 '
-find_local_version()
+find_version()
 {
         if [ -f /rom/etc/banner ]; then
                 sed -ne "s!.*$D4/$D2/$D2 $D2:$D2.*!\\1\\2\\3\\4\\5!p;t" \
                         /rom/etc/banner
         else
         	echo "unknown"
+		exit 1
 	fi
 }
 
