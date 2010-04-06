@@ -15,27 +15,28 @@ $Id$
 <%+header%>
 <%
 require("luci.sys")
-local version=luci.sys.exec('sed -e "s!.*$D4/$D2/$D2$D2:$D2.*!\\1\\2\\3\\4\\5!p;t" /rom/etc/banner')
-local uci_show=luci.sys.exec('uci show')
+local version=luci.sys.exec('pirate-version')
+local config=luci.sys.exec('pirate-config')
+config=luci.util.trim(config)
 %>
 
 <%=output%>
 
-<form method="put" action="http://heartbeat.piratenfreifunk.de/fehlerberichte">
+<form method="PUT" action="http://heartbeat.piratenfreifunk.de/fehlerberichte/new">
 	<div class="cbi-map">
 		<h2><a id="content" name="content">Heartbeat - Fehlerbericht</a></h2>
 		<div class="cbi-map-descr">Mit Hilfe dieses Formulars lassen sich Systemdaten an heartbeat.piratenfreifunk.de schicken. Nach Abschicken der Daten läßt sich ein Fehlerbericht erstellen.</div>
 			<fieldset class="cbi-section">			
 				<div class="cbi-section-node">
-					<div class="cbi-value" ><label class="cbi-value-title" for="heartbeat[version]">Version</label>
+					<div class="cbi-value" ><label class="cbi-value-title" for="bugreport[version]">Version</label>
 						<div class="cbi-value-field">
-							<input class="cbi-input-text" type="text" id="heartbeat_version" name="heartbeat[version]" value="<%=version%>"/>
+							<input class="cbi-input-text" type="text" id="heartbeat_version" name="bugreport[version]" value="<%=version%>"/>
 						</div>
 					</div>
-					<div class="cbi-value" ><label class="cbi-value-title" for="heartbeat[config]">UCI-Config</label>
+					<div class="cbi-value" ><label class="cbi-value-title" for="bugreport[uci]">Config</label>
 						<div class="cbi-value-field">
-							<textarea name="heartbeat[config]" cols="60" rows="10">
-								<%=uci_show%>
+							<textarea name="bugreport[uci]" cols="60" rows="10">
+								<%=config%>
 							</textarea>
 						</div>
 					</div>
