@@ -10,6 +10,9 @@ config 'settings' 'wizard'
 	option 'sharenet' '0'
 	option 'wan_security' '0'
 
+config 'settings' 'custom_splash'
+	option 'mode' 'disabled'
+
 config 'settings' 'heartbeat'
 	option 'mode' 'update'
 

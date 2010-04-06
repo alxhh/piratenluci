@@ -24,12 +24,4 @@ c:option(Value, "homepage", "Webseite")
 c:option(Value, "ssid", "ESSID")
 c:option(Value, "prefix", "Netzprefix")
 
-d = m:section(NamedSection, "heartbeat", "settings", "Heartbeat")
-hbm=d:option(ListValue, "mode", "Heartbeatmodus")
-hbm.widget="radio"
-hbm.size=1
-uci:foreach("freifunk", "heartbeat_mode", function(s)
-	hbm:value(s[".name"], "%s (%s)" %{s.name, s.description})
-end)
-
 return m

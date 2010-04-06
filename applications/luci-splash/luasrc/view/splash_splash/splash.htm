@@ -12,10 +12,27 @@ You may obtain a copy of the License at
 $Id$
 
 -%>
-<%+header%>
+
+<%
+	local fs = require "luci.fs"
+	local uci = require "luci.model.uci".cursor()
+
+	local cs = uci:get("freifunk", "custom_splash", "mode")=="enabled"
+%>
+
+<% if cs then %>
+	<%=fs.readfile("custom_header.htm")%>
+<%else%>
+	<%+header%>
+<%end%>
 <%+splash/splash%>
 <form method="get" action="<%=controller%>/splash/activate">
-	<input type="submit" value="<%:decline Decline%>" />
-	<input type="submit" name="accept" value="<%:accept Accept%>" />
+	<input style="font-size:200%; background-color:#ff8800; border: 1px solid #000;" type="submit" value="<%:decline Decline%>" />
+	<input style="font-size:200%; background-color:#ff8800; border: 1px solid #000;" type="submit" name="accept" value="<%:accept Accept%>" />
 </form>
-<%+footer%>
+<% if cs then %>
+	<%=fs.readfile("custom_footer.htm")%>
+<%else%>
+	<%+footer%>
+<%end%>
+
