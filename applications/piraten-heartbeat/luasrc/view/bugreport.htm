@@ -15,14 +15,15 @@ $Id$
 <%+header%>
 <%
 require("luci.sys")
-local version=luci.sys.exec('pirate-version')
-local config=luci.sys.exec('pirate-config')
+print(luci.util.libpath ())
+local version=luci.sys.exec('/sbin/pirate-version')
+local config=luci.sys.exec('/sbin/pirate-config')
 config=luci.util.trim(config)
 %>
 
 <%=output%>
 
-<form method="PUT" action="http://heartbeat.piratenfreifunk.de/fehlerberichte/new">
+<form method="post" action="http://heartbeat.piratenfreifunk.de/fehlerberichte/new">
 	<div class="cbi-map">
 		<h2><a id="content" name="content">Heartbeat - Fehlerbericht</a></h2>
 		<div class="cbi-map-descr">Mit Hilfe dieses Formulars lassen sich Systemdaten an heartbeat.piratenfreifunk.de schicken. Nach Abschicken der Daten läßt sich ein Fehlerbericht erstellen.</div>
