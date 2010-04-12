@@ -20,30 +20,11 @@ You may obtain a copy of the License at
 $Id$
 
 -%>
-							</div>
-							<!--- end actual main content --->
-  						</td>
-  						<td class="rc">
-  						</td>
-					</tr>
- 					<tr>
-  						<td class="lb">
-  						</td>
-  						<td class="cb">
-  						</td>  
-  						<td class="rb">
-  						</td>
- 					</tr>
-				</table>
-				<!--- end main content frame --->
-			</td>
-			<!-- End main content -->
-		</tr>
-	</table>
-	<div class="luci separator black whitetext bold"><a href="<%=controller%>/about">Powered by <%= luci.__appname__ .. " (v" .. luci.__version__ .. ")" %></a></div>
-
-</div>
-<!-- end background layers -->
+	</div> <!-- END #maincontent -->
+	<div id="footer">
+		<a href="<%=controller%>/about">Powered by <%= luci.__appname__ .. " (v" .. luci.__version__ .. ")" %></a>
+		<a href="http://www.piratenpartei.de" class="piratenlink">Piratenpartei </a>
+	</div>
 </div>
 </body>
 </html>

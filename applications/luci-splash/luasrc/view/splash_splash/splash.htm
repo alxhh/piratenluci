@@ -26,10 +26,12 @@ $Id$
 	<%+header%>
 <%end%>
 <%+splash/splash%>
+<div id="splash">
 <form method="get" action="<%=controller%>/splash/activate">
-	<input style="font-size:200%; background-color:#ff8800; border: 1px solid #000;" type="submit" value="<%:decline Decline%>" />
-	<input style="font-size:200%; background-color:#ff8800; border: 1px solid #000;" type="submit" name="accept" value="<%:accept Accept%>" />
+	<input type="submit" value="<%:decline Decline%>" />
+	<input type="submit" name="accept" value="<%:accept Accept%>" />
 </form>
+</div>
 <% if cs then %>
 	<%=fs.readfile("custom_footer.htm")%>
 <%else%>

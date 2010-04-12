@@ -6,204 +6,210 @@
 	
 	.low_res_only{
 		display:none;
+	}
+
+	body{
+		font-family:sans-serif;
+		font-size:12px;
 	}	
 	
-	/**** begin basic background layout setting ****/
-		/* there are three background layers:
-			* the body using pirate_blue.png as background image.
-			* above that the background pattern (id="main_bg_pattern") 
-			  for an orange top, black separator bar and below that
-			  pirate_grey blendinng into pirate_blue.
-			* above that the top background image followed by the logo.
-		   I use PNGs instead of colors to make sure that colors that are 
-		   meant to look identical actually do so.
-		*/
-		body {
-			background-image: url(images/pirate_blue.png);
-			font-family: Verdana, Arial, sans-serif;
-		}
-	
-		#main_bg_pattern {
+	/**** begin basic layout setting ****/
+		#main{
 			position:absolute;
-			background: url(images/PF_background_pattern.png) repeat-x;
-			top:0px;
-			left:0px;
+			min-height:100%;
+			min-width:980px;
 			width:100%;
-		        min-height:100%;
-			min-width:950px;
-			z-index:0;		
+			background: transparent url('images/header_bg_pattern.png') repeat-x 0% 0%;
 		}
-	
-		#main_bg {
-			position:relative;
-			background: url(images/PF_background.png) no-repeat;
-			top:0px;
-			left:0px;
-			width:100%;
-			min-height:550px;
-			z-index:0;
-		}
-	
-		#logo {
-			position:absolute;
-			left:32px;
-			top:59px;
-			background: transparent;
+
+		#header {		
+			background: transparent url('images/header_bg_image.png') no-repeat 100% 0%;
+			height:70px;
 		}
 		
 		#heading {
-			margin-left:20%; /* in addtion to the absolute header padding */
-			margin-top:10px; /* in addtion to the absolute header padding */
-		}
-	/**** End basic background layout setting ****/
-	
-	/**** Begin basic content layout ****/
-		/* the screen is devided into four content areas:
-			*
-			* the header is used for the heading and the skyline background.
-			* below that lies the menubar providing space for main menu.
-			* (in low res) below that an adbar.
-			* below the menubar lies a content table including 
-				* the container for the sidebar(left) (not displayed on low res)
-				* the container for the main content div(right).
-		   padding and margin are matched with the background images.		
-		*/
-	
-		#header {		
-			background: transparent url(images/city.png) no-repeat 100% 100%;
-			border:none;
-			font-size:60px;
-			font-weight:800;
+			font-size:35px;
+			font-family:impact, sans-serif;
 			color:#ffffff;
-			vertical-align:middle;
-			padding-left:100px;	
-			height:111px;
-			padding-top:26px;
+			text-decoration:none;
+			line-height:44px;
+			margin-left:1%;
 		}
+
+		#logo { 
+			background: transparent url('images/logo.png') 50% 50%;
+			position:absolute;
+			top:30px;
+			right:44px;
+			width:85px;
+			height:120px;
+		}
+
+		#stats {
+			position:absolute;
+			top:80px;
+			right:150px;
+			font-size:10px;	
+		}
+	
+		#stats span {
+			padding:0 10px;
+		}
+
+		
+		#maincontent{
+			margin: 5%;
+			margin-bottom:55px;
+			margin-top:40px;
+		}
+
+		#footer {
+			position:absolute;
+			bottom:0px;
+			margin:0px;
+			width:100%;
+			border-top:5px solid #000;
+			background-color:#f80;
+			line-height:15px;
+		}
+
+		#footer a {
+			font-size:10px;
+			font-family:sans-serif;
+			font-weight:bold;
+			color:#fff;			
+			text-decoration:none;
+			margin-left:1%;
+		}
+		
+		#footer .piratenlink {
+			float:right;
+			margin-right:1%;
+		}
+	
 		#iphone_menu_open,
 		#iphone_menu_close{
 			display:none;
 		}
 
-		#menubar {
-			background: transparent;
-			color: #ffffff;
-			margin-left:284px; /* so that the menu bar does not overlap the logo */		
-			vertical-align:middle;
-			height:24px;
-			font-size:16px;	
-		}
-		#content_table {
-			table-layout:fixed;
-			z-index:5;
-			border-collapse:collapse;
-			margin-bottom:20px;
-			width:100%;
-		}
-		#sidebar_container{
-			padding-top:115px; 
-			width:200px;
-			font-size:20px;
-			vertical-align:top;
-		}
-		#adbar_low_res_container{
-			display:none;
-			vertical-align:middle;
-			padding-left:214px;
-			padding-right:11px;
-			margin-top:11px;
-		}
-	
-		#main_content_container{
-			padding:14px 11px;
-			vertical-align:top;
-		}
-	/**** End basic content layout ****/
+	/**** End basic layout setting ****/
 	
 	
 	/**** Begin menu styles ****/	
 		/*** begin main menu styles ***/
+			#menubar {
+				background: transparent;
+				color: #ffffff;
+				vertical-align:middle;
+				height:20px;
+				font-size:12px;	
+				font-weight:bold;
+				margin-left:1%;
+			}
+
 			#mainmenu {	
 				float: left;
 				width: auto;
 				background: transparent;
-				color: #ffffff;
+				height:100%;
+				margin-left:-6px;
+
+			}
+		
+			#modemenu {
+				float: right;
+				width: auto;
+				background: transparent;
+				height:100%;
+				margin-right:2%;
+			}
+		
+			#changes {
+				float: right;
+				width: auto;
+				background: transparent;
+				height:100%;
+				margin-right:127px;
 			}
 	
-			#mainmenu div {
+			.pulldown div {
 				float: left;							
+				height:100%;
+				v-align:middle;
 			}
-			#mainmenu li {
+			.pulldown li {
 				white-space: nowrap;
 			}		
-			/** first level styles **/		
-				#mainmenu div a {
-					padding:0;
-					padding-left:0.5em;
+			/** first level styles **/	
+				.pulldown a {
+					padding: 1px 6px;				
 					color: #ffffff;
-					text-decoration: none;
-					font-weight: bold;
-					margin-right:0.5em;
+					line-height:20px;
+					text-decoration:none;
 				}
-				#mainmenu div.tiny a{
-					font-weight:normal;
-					font-size:0.8em;
-					margin-right:0px;
+
+				.pulldown > div > a { /* first level links */
+					padding: 3px 4px;				
 				}
-				#mainmenu div:hover > ul { /*show dropdown menus on hover*/
+
+				.pulldown > div > a:hover { /* first level links */
+					background: transparent url(images/black_25.png);
+				}
+
+				.pulldown div:hover > ul { /*show dropdown menus on hover*/
 					display:block;
 				}
-				#mainmenu div:hover > a{
-					color: #4f9ed3;
+	
+				.pulldown div div:hover > a{
+					background: transparent url(images/black_60.png);
 				}
-				#mainmenu div.preactive > a {
-					color: #4f9ed3;
-				}
-				/** dropdown level styles **/					
-					#mainmenu div ul { 
+
+				/** pulldown level styles **/
+					.pulldown > div > ul { 					
+						padding-top:5px;
+					}
+					.pulldown div ul { 
 						display: none;
 						position: absolute;
 						background: transparent url(images/black_60.png);
 						list-style-type: none;
 						z-index:20;
 					}
-					#mainmenu li a{ 
-						font-size:0.8em;
+					.pulldown li a{ 
 						line-height:1.5;
-			        		margin-left:0em;
+		        		margin-left:0em;
 						padding-right:25px;	/*space for the submenu marker*/
-			        		display:block;
+			       		display:block;
 					}
-					#mainmenu ul li.show_left>a{ /* for submenus showing on the left*/
-						font-size:0.8em;
+					.pulldown ul li.show_left>a{ /* for submenus showing on the left*/
 						line-height:1.5;
-			        		margin-left:0em;
+		        		margin-left:0em;
 						padding-left:25px;	/*space for the submenu marker*/
-			        		display:block;
+		        		display:block;
 					}
-					#mainmenu ul li:hover,
-					#mainmenu ul li:focus{ /*menu item background, dropdown panels, active*/
+					.pulldown ul li:hover,
+					.pulldown ul li:focus{ /*menu item background, dropdown panels, active*/
 						background:transparent url(images/black_60.png);
 					}
-					#mainmenu ul li:hover > ul{ /*show submenus on hover*/
+					.pulldown ul li:hover > ul{ /*show submenus on hover*/
 						display: block;
 					}
 			
-					#mainmenu ul li:hover > a{
+					.pulldown ul li:hover > a{
 						color: #4f9ed3;
 					}	
-					#mainmenu li a.hasSub{ /* show submenu marker */
+					.pulldown li a.hasSub{ /* show submenu marker */
 						background:transparent url(images/right.png) 100% 50% no-repeat;
 					}	
-					#mainmenu ul li.show_left > a.hasSub{ /* show submenu marker */
+					.pulldown ul li.show_left > a.hasSub{ /* show submenu marker */
 						background:transparent url(images/left.png) 0% 50% no-repeat;
 					}			
-					#mainmenu ul li > ul { /*submenus appear to the right*/
+					.pulldown ul li > ul { /*submenus appear to the right*/
 						left: 100%;
-						margin-top:-1.2em; /* line-height times font-size*/
+						margin-top:-18px; /* line-height times font-size*/
 						margin-left:-7px;  /*should not overlap the submenu marker*/
 					}
-					#mainmenu ul li > ul.show_left { /*show submenu on the left*/
+					.pulldown ul li > ul.show_left { /*show submenu on the left*/
 						left:auto;
 						right:100%;
 						margin-right:-7px;					
@@ -269,118 +275,10 @@
 					}				
 		/*** end main menu styles ***/
 
-		/*** begin mode menu styles ***/
-			.modemenu ul {
-				width: 100%;
-				list-style-type: none;
-			}
-	
-			.modemenu li {
-				display:block;	
-			}
-	
-			.modemenu a{
-				display:block;
-				text-align:right;
-				padding:0;
-				padding-right:1em;
-				margin-left:1em;
-				margin-right:0em;
-				color: #000000;
-				text-decoration: none;
-				font-weight: bold;
-				font-size:14px;
-			}
-	
-			.modemenu .active a {
-				color: #4F9ED3;
-				font-weight:bold;
-				background: transparent url(images/right_black.png) no-repeat 0% 50%;
-			}
-			.modemenu .active a:focus,		
-			.modemenu .active a:hover {
-				color: #ffffff;
-				font-weight:bold;
-				background: transparent url(images/right.png) no-repeat 0% 50%;
-			}		
-			
-			.modemenu li:focus,
-			.modemenu li:hover {
-				background: #4F9ED3;
-			}
-			.modemenu a:hover,
-			.modemenu a:focus {
-				color: #ffffff;
-				font-weight:bold;
-				background: transparent url(images/right.png) no-repeat 0% 50%;
-			}
-		/*** end mode menu styles ***/
-
-		/*** begin changes styles ***/
-			/*styles matched with #mainmenu */
-			.changes {
-				text-align:right;
-				position:relative;
-			}
-			.changes ul{	
-				position:absolute;
-				left:100%;
-				margin-top:-1.5em;
-				background: transparent url(images/black_60.png);
-				display:none;
-				list-style:none;
-				color:#ffffff;	
-				white-space:nowrap;		
-				z-index:10;
-			}
-			.changes:hover > ul {
-				display:block;
-			}
-	
-			.changes ul li:hover,
-			.changes ul li:focus{ 
-				background:transparent url(images/black_60.png);
-				color:#4F9ED3;			
-			}
-			.changes a {
-				font-weight:bold;
-				text-decoration:none;
-				color:#000000;
-				padding-right:1em;
-				background: transparent url(images/right_black.png) 100% 50% no-repeat;			
-			}
-			.changes a.no_changes{
-				background: transparent none;
-			}		
-			.changes a:hover {
-				color:#4F9ED3;		
-			}
-			.changes li a { 
-				color:#ffffff;
-				font-size:1em;
-				line-height:1.5;
-				font-weight:bold;
-	        		padding: 0px 0.5em;
-	        		display:block;
-				text-decoration:none;
-			}
 							
 	/**** end menu styles****/
 }
 /*****END @MEDIA SCREEN *****/
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /***** BEGIN MEDIA  ALL *****/
@@ -390,159 +288,11 @@
 	.pathbar {
 		display: none;
 	}
-
-	/**** Begin content frames ****/
-
-	table.main_content_frame{
-		width:100%;
-		position:relative;
-		border-collapse:collapse;
-		border-spacing:0px;
-	}
-
-	table.sidebar_content_frame{
-		width:100%;
-		position:relative;
-		border-collapse:collapse;
-	}
 	
-		td.main{
-			padding:0px;
-			background: url(images/pirate_grey.png);
-		}
-	
-	
-		td.lt{
-			padding:0px;
-			width:54px;
-			height:42px;
-			background:transparent url(images/box_corners.png) no-repeat 0% 0%;
-		}
-
-		td.lt_spec{
-			padding:0px;
-			width:54px;
-			height:42px;
-			background:transparent url(images/box_corners.png) no-repeat 0% 0%;
-		}
-		
-		td.ct{
-			padding:0px;
-			height:42px;
-			background:transparent url(images/ct.png) repeat-x 50% 0%;	
-		}
-		
-		td.rt{
-			padding:0px;
-			width:54px;
-			height:42px;
-			background:transparent url(images/box_corners.png) no-repeat 100% 0%;
-		}
-		
-		
-		td.lc{
-			padding:0px;
-			width:54px;
-			background:transparent url(images/lc.png) repeat-y 0% 50%;
-		}
-	
-		td.rc{
-			padding:0px;
-			width:54px;
-			background:transparent url(images/rc.png) repeat-y 100% 50%;
-		}
-	
-	
-		td.lb{	
-			padding:0px;
-			width:54px;
-			height:42px;	
-			background:transparent url(images/box_corners.png) no-repeat 0% 100%;
-		}
-		
-		td.cb{
-			padding:0px;
-			height:42px;
-			background:transparent url(images/cb.png) repeat-x 50% 100%;
-		}
-		
-		td.rb{
-			padding:0px;
-			width:54px;
-			height:42px;
-			background:transparent url(images/box_corners.png) no-repeat 100% 100%;
-		}	
-	/**** End content frames ****/
-
-
-	/**** Begin Sidebar ****/
-	
-	#sidebar {
-		margin-top:-22px;
-		margin-bottom:-22px;
-		margin-right:-43px;
-		/* the content frame actually is too wide,
-		that is why the sidebar space needs to be enlarged*/
-		font-size:12px;
-		font-weight:normal;
-	}
-	
-		#sidebar  h1 {
-			font-size:100%;
-			border-bottom-width:1px;
-			border-bottom-style:solid;
-			border-bottom-color:#000000;
-			margin:1em;
-			display:block;
-			text-align:left;
-		}
-	
-		#sidebar p {
-			padding:0em 1em;
-		}
-	/**** End Sidebar ****/
-	
-	
-	/**** Begin Adbar ****/
-	#adbar_high_res {
-		color:#000000;
-		margin-top:-22px;
-		margin-bottom:-22px;
-		margin-right:-43px;
-	}
-		#adbar_high_res #klarmachen {
-			font-size:30px;
-			font-family:impact, sans-serif;
-			text-align:center;
-			margin:0.5em;
-		}
-
-	#adbar_low_res {
-		color:#000000;
-		margin:-22px;
-	}
-		#adbar_low_res #klarmachen {
-			font-size:50px;
-			font-family:impact, sans-serif;
-			text-align:center;
-		}
-	/**** End Adbar ****/
 
 	/**** Begin main content ****/
-	#maincontent {
-		margin:-16px -22px; 
-	/* the content frame actually is too wide, 
-	that is why the main content space needs to be enlarged*/
-		padding: 0em;
-		padding-bottom:20px;
-		background: transparent url(images/pirate_grey.png);
-		color: #000000;
-		font-size: 80%;
-	}
 		#content {
-			margin-left:30px; 
-			/* since the main content frame's upper left corner ist clipped,
-			the first headig needs to be indented.*/
+			width:50%;
 		}
 		#maincontent h2 {
 			margin: 0.25em 0 0.5em 0;
@@ -565,7 +315,44 @@
 		#maincontent ul {
 			margin-left: 2em;
 		}
+		
+		#maincontent .multiColumn {
+			margin:1em 0px;
+			width:100%;
+		}
 
+		#maincontent .multiColumn .first{
+			width:49%;
+			float:left;
+			padding-right:1%;
+		}
+
+		#maincontent .multiColumn .second{
+			width:49%;
+			float:left;
+			padding-left:1%;
+		}
+		#maincontent .multiColumn .terminateMultiColumn{
+			clear:both;
+			float:none;
+			display:block;
+			text-align:center;
+			padding-top:2em;
+		}
+
+		#maincontent ul{
+			margin-bottom:1em;
+		}
+
+		#splash {
+			margin-top:3em;
+			text-align:center;
+		}
+
+		#splash input{
+			font-size:200%;
+			margin:0px 10%;
+		}
 
 		textarea#syslog {
 			width: 98%;

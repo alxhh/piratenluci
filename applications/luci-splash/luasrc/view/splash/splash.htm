@@ -15,7 +15,8 @@ $Id$
 <% local c = luci.model.uci.cursor():get_all("freifunk", "community") %>
 
 <h2><a id="content" name="content">Willkommen!</a></h2>
-<p>
+<div class="multiColumn">
+<div class="first">
 Du bist jetzt mit dem freien Funknetz 
 <a href="<%=c.homepage%>"><%=c.name%></a> verbunden.<br />
 Wir sind ein experimentelles Gemeinschaftsnetzwerk, aber kein Internetanbieter.
@@ -40,19 +41,28 @@ Wenn Du unsere Idee gut findest, kannst Du uns unterstützen:
 <li>Betreibe deine anderen WLAN-Geräte <em>NICHT</em> auf den Kanälen 1-5, diese stören oft unser Netz.</li>
 </ul>
 </p>
-
-<p>
-Mit einem Klick auf <em><%:accept Accept%></em> kannst du für <%=c.leasetime%> Stunden
-über unser Netz das Internet verwenden. Dann wirst du erneut aufgefordet, diese Bedingungen zu akzeptieren.
-</p>
+</div>
+<div class="second">
 <p>
 <hl></hl>
-Dieser Freifunknode wird von einem Piraten betrieben.
+Dieser Freifunkknoten wird von einem Piraten betrieben.
 </p>
 <p>
-Die Vernetzung untereinander und das zur Verfügung stellen von Internet, wie es <a href="<%=c.homepage%>"><%=c.name%></a> betreibt, ist etwas, was die <a href="http://www.piratenpartei.de">Piraten</a> nicht nur mit Worten gutheissen, sondern auch durch aktive Teilname fördern.
+Taten statt Worte: 
+Sich untereinander zu vernetzen und seinen Internetzugang mit anderen zu teilen, 
+wie es <a href="<%=c.homepage%>"><%=c.name%></a> bereits betreibt,  wird von den 
+<a href="http://www.piratenpartei.de">Piraten</a> nicht nur mit Worten beworben, 
+sondern auch durch aktive Teilname vorantreiben.
 </p>
 <p>
 Deshalb hat ein Pirat diesen Knoten errichtet und unterstützt so mit praktischen Taten den Freifunkgedanken.
 </p>
+</div>
+<div class="terminateMultiColumn">
+<p>
+Mit einem Klick auf <em><%:accept Accept%></em> kannst du für <%=c.leasetime%> Stunden
+über unser Netz das Internet verwenden. Dann wirst du erneut aufgefordet, diese Bedingungen zu akzeptieren.
+</p>
+</div>
+</div>
 

@@ -172,14 +172,6 @@ end
 
 
 
-
-
-
-
-
-
-
-
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -225,54 +217,17 @@ end
 </head>
 
 <body>
-
-
-<!-- Begin background layers -->
-<div id="main_bg_pattern">
-<div id="main_bg">
-	<!-- Begin Header -->
-	<div id="logo">
-		<a href="https://piratenpartei.de">
-			<img src="<%=media%>/images/logos_merged.png" border="0"/>
-		</a>
-	</div>
+<div id="main">
 	<div id="header">
-		<a href="https://piratenpartei.de">
-			<img id="heading" src="<%=media%>/images/piratenfreifunk.png" border="0"/>
-		</a>
-	</div>
-
-	<div class="pathbar separator black whitetext bold">
-		<%:path%>: 
-<%-
-local c = tree
-local url = controller
-for k,v in pairs(request) do
-	if c.nodes and c.nodes[v] then
-		c = c.nodes[v]
-		url = url .. "/" .. v
--%>
-		<a href="<%=url%>"><%=c.title or v%></a> 
-<%- 
-		if k ~= #request then 
--%>
-			&#187; 
-<%- 
-		end
-	end
-end
-
--%>
-	</div>
-	<!-- End header -->
+		<a id="heading" href="https://piratenpartei.de">piraten.freifunk.net</a>
 <%
 if cattree and cattree.nodes then
 %>
-	<!-- Begin iPhone menu -->
-	<div id="iphone_menu" class="low_res_only">
-		<!-- Begin iPhone menu handles -->
-		<div id="iphone_menu_handles">
-			<span  	id="iphone_menu_open">	
+		<!-- Begin iPhone menu -->
+		<div id="iphone_menu" class="low_res_only">
+			<!-- Begin iPhone menu handles -->
+			<div id="iphone_menu_handles">
+				<span  	id="iphone_menu_open">	
 <%-
 local menu_symbol = "&hellip;"
 if ucic > 0 then
@@ -290,8 +245,8 @@ iphone_button(menu_symbol, "", "\
 	document.getElementById('iphone_menu_joker').style.display='none';\
 ")
 -%>
-			</span>
-			<span 	id="iphone_menu_close"> 
+				</span>
+				<span 	id="iphone_menu_close"> 
 <%-
 
 iphone_button("&times;", "", "\
@@ -304,90 +259,90 @@ iphone_button("&times;", "", "\
 	document.getElementById('iphone_menu_joker').style.display='none';\
 ")
 -%>
-			</span>
-			<a id="iphone_menu_joker"> 				
+				</span>
+				<a id="iphone_menu_joker"> 				
 <%
 back = translate("back", "zurück")
 iphone_button("&lang;&nbsp;"..back,"","")
 %>
-			</a>
+				</a>
 
-		</div>			
-		<!-- End iPhone menu handles -->
+			</div>			
+			<!-- End iPhone menu handles -->
 
-		<!-- Begin iPhone menu items -->
-		<div id="iphone_menu_items">
-			<table>		
-				<!-- Begin changes -->
+			<!-- Begin iPhone menu items -->
+			<div id="iphone_menu_items">
+				<table>		
+					<!-- Begin changes -->
 <%
 if ucic > 0 then 
 %>					
-				<tr class="level0" onload="document.getElementById('')">			
-					<td class="menu_item">
+					<tr class="level0" onload="document.getElementById('')">			
+						<td class="menu_item">
 <%
 	local usc = translate("unsavedchanges");
 	iphone_button('<a class="warning" href="'..controller..'/'..category..'/uci/changes">'..usc..':'..ucic..'</a>')							
 %>
-					</td>
-					<td class="submenu_marker">
+						</td>
+						<td class="submenu_marker">
 <%
 	iphone_button('<a class="warning">&rang</a>',"", "show_menu_items('level0_c')")
 %>
-					</td>
-				</tr>
+						</td>
+					</tr>
 <%- 
 	iphone_menu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], "0_c")	
 end
 
 %>
-				<!-- End changes -->
-				<!-- Begin mode menu -->
-				<tr class="level0">
-					<td class="menu_item">
+					<!-- End changes -->
+					<!-- Begin mode menu -->
+					<tr class="level0">
+						<td class="menu_item">
 <%
 	local mode = translate('mode', 'Modus');
 	iphone_button('<a>'..mode..'</a>', "", "show_menu_items('level0_m')")
 %>
-					</td>
-					<td class="submenu_marker">
+						</td>
+						<td class="submenu_marker">
 <%
 	iphone_button("&rang;", "", "show_menu_items('level0_m')") 	
 %>
-					</td>
-				</tr>
-				<!-- End mode menu -->
-				<!-- Begin basic menu items -->
+						</td>
+					</tr>
+						<!-- End mode menu -->
+						<!-- Begin basic menu items -->
 <%-
 	for k,node in pairs(tree.nodes) do
 		if node.title and not node.hidden then 
 %>
-				<tr class="level0_m">
-					<td class="menu_item <% if request[1] == k then %> active<%end%>">
+					<tr class="level0_m">
+						<td class="menu_item <% if request[1] == k then %> active<%end%>">
 <%
 						iphone_button('<a href="'..controller..'/'..k..'">'..node.title..'</a>', "", "top.location.href='"..controller.."/"..k.."'")						
 %>
-					</td>
-					<td class="submenu_marker">
-					</td>
-				</tr>
+						</td>
+						<td class="submenu_marker">
+						</td>
+					</tr>
 <%-		end
 	end
 
 	iphone_menu("/"..category.."/", cattree, 0) 
 %>
-				<!-- End basic menu items -->
-			</table>
+					<!-- End basic menu items -->
+				</table>
+			</div>
+			<!--End iPhone menu items -->
 		</div>
-		<!--End iPhone menu items -->
-	</div>
-	<!-- End iPhone menu -->
+		<!-- End iPhone menu -->
 <%
 end
 %>
-	<!-- Begin menu bar -->
-	<div id="menubar" class="high_res_only">
-		<!-- Begin main menu -->
-		<div id="mainmenu">
+		<!-- Begin menu bar -->
+		<div id="menubar" class="high_res_only">
+			<!-- Begin main menu -->
+			<div id="mainmenu" class="pulldown">
 <%-
 local function showleft(d)
 	if d%2==1 or d==0 then
@@ -416,21 +371,21 @@ local function submenu(prefix, node, depth)
 
 	if count > 0 then 
 -%>
-<ul	class="<%=showleft(depth)%>">
+				<ul	class="<%=showleft(depth)%>">
 <%- 		
 		if depth > 0 then 
 %>	
-	<!-- Begin upper round corners -->
-	<li class="upper_corners">
-		<table>
-			<tr>
-				<td class="l"></td>
-				<td class="c"></td>
-				<td class="r"></td>
-			</tr>
-		</table>
-	</li>
-	<!-- End upper round corners -->
+					<!-- Begin upper round corners -->
+					<li class="upper_corners">
+						<table>
+							<tr>
+								<td class="l"></td>
+								<td class="c"></td>
+								<td class="r"></td>
+							</tr>
+						</table>
+					</li>
+					<!-- End upper round corners -->
 <%- 		
 		end 
 		local subs
@@ -442,37 +397,37 @@ local function submenu(prefix, node, depth)
 				subs = countsubs(nnode)
 %>
 
-	<li 	class="<%=showleft(depth+1)%>">
-		<a  	class="	<% if nnode._menu_selected then %>active <%end%> 
-			 	<% if  subs > 0 then %>hasSub <%end%>
-			"	
-			href="<%=luci.util.pcdata(href)%>"
-		>
-						<%=nnode.title%>
-		</a>
+					<li 	class="<%=showleft(depth+1)%>">
+						<a  	class="	<% if nnode._menu_selected then %>active <%end%> 
+							 	<% if  subs > 0 then %>hasSub <%end%>
+							"	
+							href="<%=luci.util.pcdata(href)%>"
+						>
+							<%=nnode.title%>
+						</a>
 <%- 		
 				if subs > 0 then
 					iphone_button("&rang;", "", "this.parentNode.getElementsByTagName('ul')[0].style.display='block';") 				
 				end
 				submenu(prefix .. v.name .. "/", nnode, depth+1) 
 %>
-	</li>
+					</li>
 <%- 
 			end 
 		end 
 %>
-	<!-- Begin lower round corners -->
-	<li class="lower_corners">
-		<table>
-			<tr>
-				<td class="l"></td>
-				<td class="c"></td>
-				<td class="r"></td>
-			</tr>
-		</table>
-	</li>
-	<!-- End lower round corners -->
-</ul>
+					<!-- Begin lower round corners -->
+					<li class="lower_corners">
+						<table>
+							<tr>
+								<td class="l"></td>
+								<td class="c"></td>
+								<td class="r"></td>
+							</tr>
+						</table>
+					</li>
+					<!-- End lower round corners -->
+				</ul>
 <%-
 	end
 end
@@ -494,169 +449,85 @@ if cattree and cattree.nodes then
 			href = (k.query) and href .. luci.http.build_querystring(k.query) or href 
 	
 %>		
-			<div 	class="	<% if node._menu_selected then %> preactive<%end-%>
-						<% if countsubs(cattree)>6 then %> tiny <%end-%>
-					"
-			>
-				<a href="<%=href%>"><%=node.title%></a>
+				<div>
+					<a href="<%=href%>"><%=node.title%></a>
 <%
 				submenu("/" .. category .. "/" .. k.name .. "/", node, 0)
 %>
-			</div>
+				</div>
 <%-		
 		end
 	end
 end
 %>
 	
-		</div>
-		<!-- end main menu -->
-	</div>
-	<!-- end menu bar -->
+				</div><!-- END main menu -->	
 
-	<!-- Begin adbar for low_res frame -->
-	<div id="adbar_low_res_container" class="low_res_only">
-		<table class="main_content_frame low_res"> <!-- same style as main content frame-->
-			<tr>
-				<td class="lt">
-  				</td>
-	  			<td class="ct">	
-  				</td>  
-  				<td class="rt">
- 				</tr>
- 			<tr>
-  				<td class="lc">
-  				</td>
-  				<td class="main">
-					<div id="adbar_low_res">
-						<!--- Begin adbar low_res content -->
-						<div id="klarmachen">
-							Klarmachen zum Ändern!
-						</div>
-						<!--- End adbar low_res content --->
-					</div>
-  				</td>
-  				<td class="rc">
-  				</td>
-			</tr>
- 			<tr>
-  				<td class="lb">
-  				</td>
-  				<td class="cb">
-  				</td>  
-  				<td class="rb">
-  				</td>
- 			</tr>
-		</table>
-	</div>
-	<!-- End adbar for low_res frame -->
-
-	<!-- begin content -->
-	<table id="content_table">
-		<tr>
-			<!-- begin sidebar -->
-			<td id="sidebar_container" class="high_res_only">
-				<!--- begin sidebar frame --->
-				<table class="sidebar_content_frame">
-					<tr><td class="ct"></td><td class="rt"></td></tr>
-					<tr>
-						<td class="main">
-							<!-- begin sidebar content -->
-							<div id="sidebar">				
-								<div class="changes">				
+				<div id="changes" class="pulldown"><!-- BEGIN changes -->
+					<div> <!-- this DIV is important for the CSS-selector -->
 <%
 if ucic > 0 then 
 %>					
-			
-									<a class="warning" href="<%=controller%>/<%=category%>/uci/changes"><%:unsavedchanges%>: <%=ucic%></a>							
+						<a class="warning" href="<%=controller%>/<%=category%>/uci/changes"><%:unsavedchanges%>: <%=ucic%></a>							
 <%- 
-	submenu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], 1)
+	submenu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], 0)
 else 
 %>
-									<a class="no_changes" href="#"><%:changes%>: 0</a>
+						<a class="no_changes" href="#"><%:changes%>: 0</a>
 <%- 
 end 
 %>
-								</div>
-								<div class="hsep">
-								</div>						
-								<!--- begin mode menu --->
-								<div class="modemenu">				
+					</div>
+				</div><!-- END changes -->
+
+				<div id="modemenu" class="pulldown"><!-- BEGIN mode menu -->
+					<div> <!-- this DIV is important for the CSS-selector -->									
+<%-
+							for k,node in pairs(tree.nodes) do
+								if request[1] == k then 
+%>
+									<a href=""><%:mode%>: <%=node.title%>&nbsp;</a></li>				
+<%-								end
+							end
+%>
+
+
 									<ul>	
 <%-
 							for k,node in pairs(tree.nodes) do
 								if node.title and not node.hidden then 
 %>
-										<li<% if request[1] == k then %> class="active"<%end%>><a href="<%=controller%>/<%=k%>"><%=node.title%></a></li>
+										<li><a href="<%=controller%>/<%=k%>"><%=node.title%></a></li>
 <%-								end
 							end
 %>
+										<!-- Begin lower round corners -->
+										<li class="lower_corners">
+											<table>
+												<tr>
+													<td class="l"></td>
+													<td class="c"></td>
+													<td class="r"></td>
+												</tr>
+											</table>
+										</li>
+										<!-- End lower round corners -->
 									</ul>
-								</div>
-								<!--- end mode menu --->
+					</div>
+				</div><!-- END mode menu -->	
 
-								<h1><%=hostname%></h1>
-								<p>
-									<%=luci.version.distname%><br />
-									<%=luci.version.distversion%><br />
-									<br/>
-									<%=model%><br/>
-									<br/>
-									<%:load%>: <%="%.2f" % load1%> <%="%.2f" % load5%> <%="%.2f" % load15%><br />
-									Total memory: <%=total_mem%> kB<br />
-									Free Memory: <%=free_mem%> kB<br />
-								</p>
-								<a href="https://www.piratenpartei.de">
-									<img 
-										src="<%=media%>/images/piratenpartei_logo.png" alt="Piratenpartei"
-										style="margin-right:auto; margin-top:3em";
-										border="0"
-									/>				
-								</a>
-							</div>
-							<!-- end sidebar content -->
-						</td>
-						<td class="rc"></td>
-					</tr>
-					<tr><td class="cb"></td><td class="rb"></td></tr>
-				</table>
-				<!-- end sidebar frame -->
-				<!--- begin adbar for high res frame --->
-				<table class="sidebar_content_frame"> <!-- same style as sidebar_content_frame -->
-					<tr><td class="ct"></td><td class="rt"></td></tr>
-					<tr>
-						<td class="main">							
-							<div id="adbar_high_res">
-								<!-- begin adbar high res content -->
-								<div id="klarmachen">
-									Klarmachen <br>
-									zum Ändern!
-								</div>
-								<!-- end adbar high res content -->
-							</div>
-							
-						</td>
-						<td class="rc"></td>
-					</tr>
-					<tr><td class="cb"></td><td class="rb"></td></tr>
-				</table>
-				<!-- end adbar for high res frame -->			
-			</td>
-			<!-- end Sidebar -->
-			<!-- begin main content-->
-			<td id="main_content_container"> 
-			<!-- begin main content frame -->
-				<table class="main_content_frame">
-					<tr>
-						<td class="lt_spec">
-  						</td>
-	  					<td class="ct">	
-  						</td>  
-  						<td class="rt">
- 						</tr>
- 					<tr>
-  						<td class="lc">
-  						</td>
-  						<td class="main">
-							<!--- begin actual main content -->
-							<div id="maincontent">
+
+			</div><!-- END menu bar -->
+		</div><!-- END header -->
+	<div id="logo">
+	</div>
+	<div id="stats">
+		<span><%=luci.version.distname%></span>
+		<span><%=luci.version.distversion%></span>
+		<span><b><%:hostname%>:</b> <%=hostname%></span>
+		<span><b><%:load%>:</b> <%="%.2f" % load1%> <%="%.2f" % load5%> <%="%.2f" % load15%></span>
+
+	</div>
+	<div id="maincontent">
+
+
