@@ -255,6 +255,15 @@ msgstr "Verify downloaded images"
 msgid "ff_remote_update_confirm"
 msgstr "Confirm Upgrade"
 
+#. Contact
+msgid "ff_contact"
+msgstr "Contact"
+
+
+#. Leave a message
+msgid "ff_leave_a_message"
+msgstr "Leave a message for the administrator of this node with up to 140 characters."
+
 #. Regional association
 msgid "pp_regional_assoc"
 msgstr "Regional association"

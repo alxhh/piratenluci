@@ -123,19 +123,28 @@
 				height:100%;
 				margin-right:2%;
 			}
+
+			#changes a {
+				padding-right:10px;
+			}
 		
 			#changes {
 				float: right;
 				width: auto;
 				background: transparent;
 				height:100%;
-				margin-right:127px;
+				margin-right:120px;
 			}
+
+			#changes a {
+				margin-right:6px;
+			}
+
 	
 			.pulldown div {
 				float: left;							
 				height:100%;
-				v-align:middle;
+				vertical-align:middle;
 			}
 			.pulldown li {
 				white-space: nowrap;
@@ -294,6 +303,7 @@
 		#content {
 			width:50%;
 		}
+
 		#maincontent h2 {
 			margin: 0.25em 0 0.5em 0;
 			font-size: 160%;
@@ -336,7 +346,8 @@
 			clear:both;
 			float:none;
 			display:block;
-			text-align:center;
+			width:50%;
+			margin:auto;
 			padding-top:2em;
 		}
 
@@ -348,10 +359,52 @@
 			margin-top:3em;
 			text-align:center;
 		}
+		#splash td {
+			width:33%;
+			padding:2px;
+			vertical-align:middle;
+			text-align:center;
+		}
 
-		#splash input{
+		#splash input[type=submit]{
 			font-size:200%;
-			margin:0px 10%;
+			margin:3px;
+			width:90%;
+		}
+
+		#splash input[type=text]{
+			margin:0px;
+			margin-top:5px;
+			text-align:center;
+			width:auto;
+		}
+		
+		#splash textarea {
+			margin:0px;
+		}
+
+		#splash .toolong {
+			color:#c00;
+			border: 2px solid #d00;
+		}
+
+		#splash table {
+			display:inline;
+		}
+		
+		#splash #messages {
+			margin-top:35px;
+			padding:10px 30%;
+		}
+
+		#splash #messages .entry{
+			text-align:left;
+			border-bottom: 1px dashed #000;
+			padding:5px 7%;
+		}
+
+		#splash #messages .entry:first-line{
+			font-weight:bold;
 		}
 
 		textarea#syslog {

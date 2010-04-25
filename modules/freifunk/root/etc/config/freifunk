@@ -12,6 +12,7 @@ config 'settings' 'wizard'
 
 config 'settings' 'custom_splash'
 	option 'mode' 'disabled'
+	option 'messages' 'enabled'
 
 config 'settings' 'heartbeat'
 	option 'mode' 'update'

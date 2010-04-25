@@ -13,17 +13,24 @@ $Id$
 
 -%>
 <%+header%>
-<% local contact = luci.model.uci.cursor():get_all("freifunk", "contact") %>
-<% local region = luci.model.uci.cursor():get_all("regions", contact.region) %>
-<h2><a id="content" name="content"><%:contact%></a></h2>
+<% 
+	local contact = luci.model.uci.cursor():get_all("freifunk", "contact") 
+	if contact.region then
+		local region = luci.model.uci.cursor():get_all("regions", contact.region) 
+		local regname = region.name
+	else
+		local regname = ""
+	end
+%>
+<h2><a id="content" name="content"><%:ff_contact%></a></h2>
 <table cellspacing="0" cellpadding="6">
-	<tr><th><%:ff_nickname%>:</th><td><%=contact.nickname%></td></tr>
-	<tr><th><%:ff_name%>:</th><td><%=contact.name%></td></tr>
-	<tr><th><%:ff_mail%>:</th><td><%=contact.mail%></td></tr>
-	<tr><th><%:ff_phone%>:</th><td><%=contact.phone%></td></tr>
-	<tr><th><%:ff_location%>:</th><td><%=contact.location%></td></tr>
-	<tr><th><%:pp_regional_assoc%>:</th><td><%=region.name%></td></tr>
-	<tr><th><%:ff_geocoord%>:</th><td><%=contact.geo%></td></tr>
-	<tr><th><%:ff_note%>:</th><td><%=contact.note%></td></tr>
+	<tr><td><%:ff_nickname%>:</td><td><%=contact.nickname%></td></tr>
+	<tr><td><%:ff_name%>:</td><td><%=contact.name%></td></tr>
+	<tr><td><%:ff_mail%>:</td><td><%=contact.mail%></td></tr>
+	<tr><td><%:ff_phone%>:</td><td><%=contact.phone%></td></tr>
+	<tr><td><%:ff_location%>:</td><td><%=contact.location%></td></tr>
+	<tr><td><%:pp_regional_assoc%>:</td><td><%=regname%></td></tr>
+	<tr><td><%:ff_geocoord%>:</td><td><%=contact.geo%></td></tr>
+	<tr><td><%:ff_note%>:</td><td><%=contact.note%></td></tr>
 </table>
 <%+footer%>

@@ -30,9 +30,19 @@ function action_dispatch()
 end
 
 function action_activate()
+	local fs = require "luci.fs"
 	local ip = luci.http.getenv("REMOTE_ADDR") or "127.0.0.1"
 	local mac = luci.sys.net.ip4mac(ip:match("^[\[::ffff:]*(%d+.%d+%.%d+%.%d+)\]*$"))
+	--local mac = "00:13:CE:71:C6:D1"
 	if mac and luci.http.formvalue("accept") then
+		local msg=luci.http.formvalue("message") or ""
+		msg=luci.util.striptags(msg)
+		msg=luci.util.trim(msg)
+		if msg~="" then
+			local prev=fs.readfile("/lib/uci/upload/messages.htm") or ""
+			local new='\n<div class="entry">'..os.date().."<br/>"..msg.."\n </div> \n"..prev
+			fs.writefile("/lib/uci/upload/messages.htm", new)
+		end
 		os.execute("luci-splash lease "..mac.." >/dev/null 2>&1")
 		luci.http.redirect(luci.model.uci.cursor():get("freifunk", "community", "homepage"))
 	else

@@ -1,4 +1,11 @@
 <%#
+This file has been modified by
+Andreas Pittrich <andreas.pittrich@web.de>
+in behalf of the german pirate party (Piratenpartei)
+www.piratenpartei.de
+
+Original Disclaimer:
+-------
 LuCI - Lua Configuration Interface
 Copyright 2008 Steven Barth <steven@midlink.org>
 Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
@@ -18,22 +25,64 @@ $Id$
 	local uci = require "luci.model.uci".cursor()
 
 	local cs = uci:get("freifunk", "custom_splash", "mode")=="enabled"
+	local msg = uci:get("freifunk", "custom_splash", "messages")=="enabled"
 %>
 
 <% if cs then %>
-	<%=fs.readfile("custom_header.htm")%>
+	<%=fs.readfile("/lib/uci/upload/custom_header.htm")%>
 <%else%>
 	<%+header%>
 <%end%>
 <%+splash/splash%>
 <div id="splash">
 <form method="get" action="<%=controller%>/splash/activate">
-	<input type="submit" value="<%:decline Decline%>" />
-	<input type="submit" name="accept" value="<%:accept Accept%>" />
+<% if msg then %>
+	<table>
+		<tr>
+			<td>
+				<%:ff_leave_a_message%><br />
+				<input type="text" value="0" readonly="readonly" size="3" maxlength="3" name="counter" id="counter" value="0">
+			</td>
+			<td>
+				<textarea 
+					id="message"
+					name="message" 
+					cols="35" 
+					rows="4"
+					
+					onkeyup="
+						len = document.getElementById('message').value.length;
+						if(len>=140){
+							document.getElementById('counter').className = 'toolong';
+							document.getElementById('message').className = 'toolong';
+							if(len>140){
+								document.getElementById('message').value=document.getElementById('message').value.substr(0,140);
+								len=140;
+							}
+						}else{
+							document.getElementById('counter').className = '';
+							document.getElementById('message').className = '';	
+						}
+						document.getElementById('counter').value = len;
+					"
+				></textarea>
+			</td>
+			<td>
+<% end %>		
+					<input type="submit" value="<%:decline Decline%>" />	<br />
+					<input type="submit" name="accept" value="<%:accept Accept%>" />
+<% if msg then %>
+			</td>
+		</tr>
+	</table>
+	<div id="messages" class="cbi-section">
+		<%=fs.readfile("/lib/uci/upload/messages.htm")%>
+	</div>
+<% end %>
 </form>
 </div>
 <% if cs then %>
-	<%=fs.readfile("custom_footer.htm")%>
+	<%=fs.readfile("/lib/uci/upload/custom_footer.htm")%>
 <%else%>
 	<%+footer%>
 <%end%>

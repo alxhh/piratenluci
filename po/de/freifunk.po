@@ -259,6 +259,14 @@ msgstr "Heruntergeladene Images verifizieren"
 msgid "ff_remote_update_confirm"
 msgstr "Update bestätigen"
 
+#. Contakt
+msgid "ff_contact"
+msgstr "Kontakt"
+
+#. Leave a message
+msgid "ff_leave_a_message"
+msgstr "Hinterlasse dem Betreiber dieses Knotens eine Nachricht mit bis zu 140 Zeichen."
+
 #. Regional association
 msgid "pp_regional_assoc"
 msgstr "Landesverband"

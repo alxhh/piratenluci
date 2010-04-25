@@ -35,12 +35,18 @@ active.size=1
 active:value("enabled", "Ja")
 active:value("disabled", "Nein")
 
+msg=d:option(ListValue, "messages", "Nachrichten aktivieren?")
+msg.widget="radio"
+msg.size=1
+msg:value("enabled", "Ja")
+msg:value("disabled", "Nein")
+
 ----------------
 
 header=d:option(TextValue, "header", "Custom Header")
 header.rows="20"
 function header.cfgvalue(self, section)
-	cs=fs.readfile("custom_header.htm")
+	cs=fs.readfile("/lib/uci/upload/custom_header.htm")
 	if cs == nil then
 		return ""
 	else 
@@ -49,7 +55,7 @@ function header.cfgvalue(self, section)
 end
 
 function header.write(self, section, value)
-	fs.writefile("custom_header.htm",value)
+	fs.writefile("/lib/uci/upload/custom_header.htm",value)
 end
 
 ----------------
@@ -57,7 +63,7 @@ end
 footer=d:option(TextValue, "footer", "Custom Footer")
 footer.rows="20"
 function footer.cfgvalue(self, section)
-	cs=fs.readfile("custom_footer.htm")
+	cs=fs.readfile("/lib/uci/upload/custom_footer.htm")
 	if cs == nil then
 		return ""
 	else 
@@ -66,7 +72,7 @@ function footer.cfgvalue(self, section)
 end
 
 function footer.write(self, section, value)
-	fs.writefile("custom_footer.htm",value)
+	fs.writefile("/lib/uci/upload/custom_footer.htm",value)
 end
 
 
